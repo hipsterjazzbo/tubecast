@@ -13,7 +13,7 @@ Self-hosted YouTube archiver with optional podcast feeds. Subscribe to channels,
 ## Quick start
 
 ```bash
-git clone https://github.com/hazel/tubecast.git && cd tubecast
+git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
 make setup          # copies .env.example → .env
 make dev            # dev mode: live code reload via bind mounts
 # or: make up       # production-like: code baked into the image
