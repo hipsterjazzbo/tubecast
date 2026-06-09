@@ -1,0 +1,11 @@
+.tempest
+.git
+.gitignore
+.env
+database/database.sqlite
+data/downloads
+data/podcast
+node_modules
+vendor
+console.log
+.lerd.yaml

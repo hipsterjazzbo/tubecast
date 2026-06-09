@@ -1,0 +1,17 @@
+services:
+  tubecast:
+    build:
+      context: .
+      args:
+        PUID: ${PUID:-33}
+        PGID: ${PGID:-33}
+    ports:
+      - "${TUBECAST_PORT:-8742}:8080"
+    env_file:
+      - .env
+    volumes:
+      - tubecast-data:/data
+    restart: unless-stopped
+
+volumes:
+  tubecast-data:

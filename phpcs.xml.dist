@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ruleset name="Tubecast">
+    <description>PSR-1 and PSR-12 coding standard for Tubecast application code.</description>
+
+    <file>app</file>
+    <file>tests</file>
+
+    <exclude-pattern>app/views/*</exclude-pattern>
+
+    <rule ref="PSR1"/>
+    <rule ref="PSR12"/>
+</ruleset>

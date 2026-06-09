@@ -1,0 +1,7 @@
+# Dev overrides: bind-mount app code for live reload. Use: make dev
+services:
+  tubecast:
+    volumes:
+      - tubecast-data:/data
+      - ./app:/var/www/html/app:Z
+      - ./public:/var/www/html/public:Z

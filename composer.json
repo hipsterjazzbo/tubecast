@@ -1,0 +1,53 @@
+{
+    "name": "hazel/tubecast",
+    "description": "Self-hosted YouTube archiver with optional podcast feeds",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.5",
+        "tempest/framework": "^3.0",
+        "hazel/ytdlphp": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5.8",
+        "carthage-software/mago": "^1.0",
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "squizlabs/php_codesniffer": "^4.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-drift": "^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@php ./vendor/bin/tempest discovery:generate --no-interaction"
+        ],
+        "phpunit": "vendor/bin/phpunit --display-warnings --display-skipped --display-deprecations --display-errors --display-notices",
+        "test": "pest",
+        "test:unit": "pest --testsuite=Unit",
+        "test:feature": "pest --testsuite=Feature",
+        "test:ui": "pest --testsuite=Ui",
+        "test:e2e": "TUBECAST_E2E=1 pest --testsuite=E2e",
+        "lint:psr": "phpcs",
+        "fix:psr": "phpcbf",
+        "lint:cs-fixer": "php-cs-fixer fix --dry-run --diff",
+        "fix:cs-fixer": "php-cs-fixer fix"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "carthage-software/mago": true,
+            "pestphp/pest-plugin": true
+        }
+    }
+}
