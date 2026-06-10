@@ -19,7 +19,7 @@ git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
 docker compose up -d
 ```
 
-The image is published to [GitHub Container Registry](https://github.com/hipsterjazzbo/tubecast/pkgs/container/tubecast) on each push to `main` (tagged `latest`).
+The image is published to [GitHub Container Registry](https://github.com/hipsterjazzbo/tubecast/pkgs/container/tubecast) on each push to `master` (tagged `latest`).
 
 Open **http://localhost:8742** and sign in with the default credentials:
 
