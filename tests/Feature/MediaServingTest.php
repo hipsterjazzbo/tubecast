@@ -29,6 +29,8 @@ describe('Media serving', function (): void {
         $item->podcastMime = 'audio/mp4';
         $item->save();
 
+        $this->logoutSession();
+
         $this->http->get('/media/secret-token/' . $ytId . '/audio.m4a')
             ->assertOk()
             ->assertHeaderContains('X-Accel-Redirect', '/internal-media/' . $sourceId . '/' . $ytId . '.m4a');
@@ -57,7 +59,9 @@ describe('Media serving', function (): void {
         $item->podcastMime = 'audio/mp4';
         $item->save();
 
-        $this->http->get('/feeds/' . $feed->slug . '/audio.xml?token=rss-feed-token')
+        $this->logoutSession();
+
+        $this->http->get('/feeds/rss-feed-token/audio.xml')
             ->assertOk()
             ->assertSee('/media/rss-feed-token/' . $ytId . '/audio.m4a', false);
 

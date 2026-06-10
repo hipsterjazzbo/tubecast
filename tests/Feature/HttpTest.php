@@ -35,7 +35,7 @@ describe('Dashboard', function (): void {
         $source = Fixtures::source(['title' => 'Critical Role']);
         Fixtures::mediaItem($source, ['status' => MediaItemStatus::Completed, 'title' => 'Episode One']);
 
-        $this->http->get('/')
+        $this->authedGet('/')
             ->assertOk()
             ->assertSee('Dashboard')
             ->assertSee('TubeCast')
@@ -44,7 +44,7 @@ describe('Dashboard', function (): void {
     });
 
     it('shows zero counts on an empty library', function (): void {
-        $this->http->get('/')
+        $this->authedGet('/')
             ->assertOk()
             ->assertSee('Episodes');
     });
@@ -55,7 +55,7 @@ describe('Sources index', function (): void {
         Fixtures::source(['title' => 'Index Only Channel', 'saveVideo' => false, 'saveAudio' => false]);
         Fixtures::source(['title' => 'Video Saver', 'saveVideo' => true, 'saveAudio' => false]);
 
-        $this->http->get('/sources')
+        $this->authedGet('/sources')
             ->assertOk()
             ->assertSee('Index Only Channel')
             ->assertSee('Video Saver')
@@ -86,7 +86,7 @@ describe('Source detail', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId)
+        $this->authedGet('/sources/' . $sourceId)
             ->assertOk()
             ->assertSee('Critical Role Campaign 3 Episode 1')
             ->assertSee('Matches filter');
@@ -110,7 +110,7 @@ describe('Source detail', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId)
+        $this->authedGet('/sources/' . $sourceId)
             ->assertOk()
             ->assertSee('Regular Episode')
             ->assertNotSee('Matches filter');
@@ -121,7 +121,7 @@ describe('Source detail', function (): void {
         Fixtures::mediaItem($source, ['title' => 'Partial Episode']);
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId . '/episodes/partial')
+        $this->authedGet('/sources/' . $sourceId . '/episodes/partial')
             ->assertOk()
             ->assertSee('Partial Episode')
             ->assertSee('episodes-panel');
@@ -132,7 +132,7 @@ describe('Source detail', function (): void {
         Fixtures::mediaItem($source);
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId . '/stats/partial')
+        $this->authedGet('/sources/' . $sourceId . '/stats/partial')
             ->assertOk()
             ->assertSee('source-stats')
             ->assertSee('Filter:');
@@ -145,7 +145,7 @@ describe('Source settings', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/settings', [
+        $this->authedPost('/sources/' . $sourceId . '/settings', [
             'title' => 'Renamed Source',
             'saveVideo' => '1',
             'saveAudio' => '1',
@@ -170,26 +170,21 @@ describe('RSS feeds', function (): void {
         $source = Fixtures::source(['saveAudio' => true]);
         $feed = Fixtures::feed($source, ['token' => 'secret-token']);
 
-        $this->http->get('/feeds/' . $feed->slug . '/audio.xml?token=secret-token')
+        $this->logoutSession();
+
+        $this->http->get('/feeds/secret-token/audio.xml')
             ->assertOk()
             ->assertSee('<rss', false)
             ->assertSee($feed->title);
-    });
-
-    it('serves legacy audio feed URLs', function (): void {
-        $source = Fixtures::source(['saveAudio' => true]);
-        $feed = Fixtures::feed($source, ['token' => 'secret-token']);
-
-        $this->http->get('/feeds/' . $feed->slug . '.xml?token=secret-token')
-            ->assertOk()
-            ->assertSee('<rss', false);
     });
 
     it('serves video feed when token is valid', function (): void {
         $source = Fixtures::source(['saveVideo' => true]);
         $feed = Fixtures::feed($source, ['token' => 'secret-token']);
 
-        $this->http->get('/feeds/' . $feed->slug . '/video.xml?token=secret-token')
+        $this->logoutSession();
+
+        $this->http->get('/feeds/secret-token/video.xml')
             ->assertOk()
             ->assertSee('<rss', false)
             ->assertSee($feed->title);
@@ -197,38 +192,42 @@ describe('RSS feeds', function (): void {
 
     it('rejects feed requests with invalid token', function (): void {
         $source = Fixtures::source(['saveAudio' => true]);
-        $feed = Fixtures::feed($source, ['token' => 'secret-token']);
+        Fixtures::feed($source, ['token' => 'secret-token']);
 
-        $this->http->get('/feeds/' . $feed->slug . '/audio.xml?token=wrong')
+        $this->logoutSession();
+
+        $this->http->get('/feeds/wrong-token/audio.xml')
             ->assertNotFound();
     });
 
     it('rejects audio feed when source does not save audio', function (): void {
         $source = Fixtures::source(['saveAudio' => false]);
-        $feed = Fixtures::feed($source, ['token' => 'secret-token']);
+        Fixtures::feed($source, ['token' => 'secret-token']);
 
-        $this->http->get('/feeds/' . $feed->slug . '/audio.xml?token=secret-token')
+        $this->logoutSession();
+
+        $this->http->get('/feeds/secret-token/audio.xml')
             ->assertNotFound();
     });
 });
 
 describe('Settings', function (): void {
     it('renders settings page', function (): void {
-        $this->http->get('/settings')
+        $this->authedGet('/settings')
             ->assertOk()
             ->assertSee('Settings')
             ->assertSee('yt-dlp');
     });
 
     it('updates yt-dlp settings', function (): void {
-        $this->http->post('/settings/yt-dlp', [
+        $this->authedPost('/settings/yt-dlp', [
             'ytDlpCookiesFile' => '/tmp/cookies.txt',
             'ytDlpProxy' => 'socks5://127.0.0.1:9050',
         ])->assertRedirect('/settings');
     });
 
     it('updates youtube api settings', function (): void {
-        $this->http->post('/settings/youtube-api', [
+        $this->authedPost('/settings/youtube-api', [
             'youtubeApiKey' => 'test-api-key',
         ])->assertRedirect('/settings');
     });

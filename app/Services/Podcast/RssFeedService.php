@@ -45,8 +45,8 @@ final readonly class RssFeedService
 
         $baseUri = rtrim(env('BASE_URI', 'http://localhost:8000'), '/');
         $feedUrl = match ($format) {
-            RssFeedFormat::Video => $baseUri . '/feeds/' . $feed->slug . '/video.xml?token=' . urlencode($feed->token),
-            RssFeedFormat::Audio => $baseUri . '/feeds/' . $feed->slug . '/audio.xml?token=' . urlencode($feed->token),
+            RssFeedFormat::Video => $baseUri . '/feeds/' . $feed->token . '/video.xml',
+            RssFeedFormat::Audio => $baseUri . '/feeds/' . $feed->token . '/audio.xml',
         };
 
         $rssRoot = '<?xml version="1.0" encoding="UTF-8"?>'

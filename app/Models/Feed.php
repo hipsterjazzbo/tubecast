@@ -13,7 +13,6 @@ final class Feed implements Bindable
     use IsDatabaseModel;
 
     public ?int $sourceId = null;
-    public string $slug;
     public string $title;
     public string $token;
     public ?int $maxEpisodes = null;

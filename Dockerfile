@@ -49,6 +49,7 @@ COPY docker/nginx/tubecast.conf /etc/nginx/server-opts.d/tubecast.conf
 COPY --chmod=755 docker/entrypoint.d/ /etc/entrypoint.d/
 RUN docker-php-serversideup-s6-init
 COPY --chmod=755 docker/s6-overlay/ /etc/s6-overlay/
+RUN printf '%s\n' '99-tubecast-init' > /etc/s6-overlay/s6-rc.d/php-fpm/dependencies
 
 RUN docker-php-serversideup-set-id www-data "${PUID}:${PGID}" \
     && docker-php-serversideup-set-file-permissions --owner "${PUID}:${PGID}" \

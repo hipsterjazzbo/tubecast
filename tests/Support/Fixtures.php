@@ -88,7 +88,6 @@ final class Fixtures
 
         return Feed::create(
             sourceId: $sourceId,
-            slug: (string) ($overrides['slug'] ?? 'source-' . $sourceId),
             title: (string) ($overrides['title'] ?? $source->title ?? 'Test feed'),
             token: (string) ($overrides['token'] ?? 'test-feed-token'),
             maxEpisodes: $overrides['maxEpisodes'] ?? 100,

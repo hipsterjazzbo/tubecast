@@ -43,5 +43,7 @@
         <env name="DATA_PATH" value="/tmp/tubecast-test"/>
         <env name="DOWNLOADS_PATH" value="/tmp/tubecast-test/downloads"/>
         <env name="PODCAST_PATH" value="/tmp/tubecast-test/podcast"/>
+        <env name="ADMIN_USERNAME" value="testadmin"/>
+        <env name="ADMIN_PASSWORD" value="test-admin-password"/>
     </php>
 </phpunit>

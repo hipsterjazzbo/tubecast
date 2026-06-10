@@ -15,11 +15,12 @@ Self-hosted YouTube archiver with optional podcast feeds. Subscribe to channels,
 ```bash
 git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
 make setup          # copies .env.example → .env
+# Edit .env: set ADMIN_USERNAME and ADMIN_PASSWORD (required)
 make dev            # dev mode: live code reload via bind mounts
 # or: make up       # production-like: code baked into the image
 ```
 
-Open **http://localhost:8742** (change `TUBECAST_PORT` in `.env` if needed).
+Open **http://localhost:8742** and sign in (change `TUBECAST_PORT` in `.env` if needed). The container will not start without `ADMIN_PASSWORD` set.
 
 On first start the container syncs your `.env` into the data volume, runs database migrations, and seeds default download profiles. SQLite, downloaded media, and podcast files all live in the `tubecast-data` Docker volume.
 
@@ -34,7 +35,7 @@ On first start the container syncs your `.env` into the data volume, runs databa
    - **Audio** — M4A podcast files plus an RSS feed (good for music or talk channels like [Oculus Imperia](https://www.youtube.com/oculusimperia))
    - **Index only** — index episodes without downloading
 4. TubeCast queues a full index automatically. Use **Activity** on the source page to watch progress.
-5. For audio sources, copy the **RSS feed URL** (with token) into your podcast app.
+5. For audio sources, copy the **RSS feed URL** into your podcast app.
 
 ### Optional: YouTube Data API
 
@@ -42,10 +43,11 @@ For faster, more reliable full indexing of large channels, add a [YouTube Data A
 
 ## Podcast feeds
 
-Each source gets a private RSS feed. The feed URL includes a secret token — treat it like a password.
+Each source gets a private RSS feed. The feed URL contains a random token in the path — treat it like a password. Podcast clients do not need your admin login.
 
+- Feed URLs look like `/feeds/{token}/audio.xml`
+- Media enclosures use `/media/{token}/{video-id}/audio.m4a`
 - Audio enclosures are served efficiently by nginx (with HTTP 206 Range support for scrubbing/seeking)
-- Legacy feed URLs of the form `/feeds/{slug}.xml` still work for older subscriptions
 
 ## Configuration
 
@@ -54,6 +56,8 @@ All settings live in **`.env`** at the project root (see `.env.example`). Docker
 | Variable | Purpose |
 |----------|---------|
 | `TUBECAST_PORT` | Host port for the web UI |
+| `ADMIN_USERNAME` | Admin login username (required) |
+| `ADMIN_PASSWORD` | Admin login password (required) |
 | `PUID` / `PGID` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
 | `BASE_URI` | Public URL for RSS enclosures and media links |
 | `YOUTUBE_API_KEY` | Optional YouTube Data API key |

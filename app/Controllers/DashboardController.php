@@ -10,11 +10,14 @@ use App\Models\Source;
 use App\Services\Source\MediaItemPresenter;
 use App\Services\Core\ModelId;
 use Tempest\Database\Direction;
+use App\Middleware\RequireAuthMiddleware;
 use Tempest\Router\Get;
+use Tempest\Router\WithMiddleware;
 use Tempest\View\View;
 
 use function Tempest\View\view;
 
+#[WithMiddleware(RequireAuthMiddleware::class)]
 final readonly class DashboardController
 {
     #[Get('/')]

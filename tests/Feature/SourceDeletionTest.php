@@ -17,7 +17,7 @@ describe('Source deletion', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/delete')
+        $this->authedPost('/sources/' . $sourceId . '/delete')
             ->assertRedirect('/sources');
 
         expect(Source::findById($source->id))->toBeNull()
@@ -31,10 +31,10 @@ describe('Source deletion', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/delete')
+        $this->authedPost('/sources/' . $sourceId . '/delete')
             ->assertRedirect('/sources');
 
-        $this->http->get('/')
+        $this->authedGet('/')
             ->assertOk()
             ->assertNotSee('Soon Gone Episode')
             ->assertNotSee('Vanishing Source');

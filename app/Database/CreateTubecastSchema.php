@@ -27,6 +27,7 @@ final class CreateTubecastSchema implements MigratesUp
             $this->downloadJobs(),
             $this->feeds(),
             $this->globalSettings(),
+            $this->users(),
         );
     }
 
@@ -110,7 +111,6 @@ final class CreateTubecastSchema implements MigratesUp
         return new CreateTableStatement('feeds')
             ->primary()
             ->foreignId('sourceId', 'sources', OnDelete::CASCADE, nullable: true)
-            ->string('slug')
             ->string('title')
             ->string('token')
             ->integer('maxEpisodes', nullable: true)
@@ -118,7 +118,18 @@ final class CreateTubecastSchema implements MigratesUp
             ->boolean('enabled', default: true)
             ->datetime('createdAt', current: true)
             ->datetime('updatedAt', current: true)
-            ->unique('slug');
+            ->unique('token');
+    }
+
+    private function users(): CreateTableStatement
+    {
+        return new CreateTableStatement('users')
+            ->primary()
+            ->string('username')
+            ->unique('username')
+            ->string('password', nullable: true)
+            ->datetime('createdAt', current: true)
+            ->datetime('updatedAt', current: true);
     }
 
     private function globalSettings(): CreateTableStatement

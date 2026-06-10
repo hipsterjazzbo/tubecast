@@ -4,6 +4,16 @@ set -e
 APP_DIR="${APP_BASE_DIR:-/var/www/html}"
 ENV_TARGET="/data/config/.env"
 
+if [ -z "${ADMIN_PASSWORD:-}" ]; then
+    echo "tubecast init: ADMIN_PASSWORD is required. Set ADMIN_USERNAME and ADMIN_PASSWORD in .env before starting." >&2
+    exit 1
+fi
+
+if [ -z "${ADMIN_USERNAME:-}" ]; then
+    echo "tubecast init: ADMIN_USERNAME is required. Set ADMIN_USERNAME and ADMIN_PASSWORD in .env before starting." >&2
+    exit 1
+fi
+
 as_www_data() {
     if [ "$(id -u)" -eq 0 ]; then
         /command/s6-setuidgid www-data "$@"
@@ -43,6 +53,8 @@ YT_DLP_SLEEP_INTERVAL=${YT_DLP_SLEEP_INTERVAL:-5}
 YT_DLP_SLEEP_REQUESTS=${YT_DLP_SLEEP_REQUESTS:-1}
 YT_DLP_LIMIT_RATE=${YT_DLP_LIMIT_RATE:-}
 YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
+ADMIN_USERNAME=${ADMIN_USERNAME}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
 EOF
 
 ln -sf "${ENV_TARGET}" "${APP_DIR}/.env"
@@ -55,8 +67,16 @@ if ! grep -qE '^SIGNING_KEY=.+' "${ENV_TARGET}" 2>/dev/null; then
     as_www_data sh -c "cd '${APP_DIR}' && php tempest key:generate"
 fi
 
+# Compose env_file may inject an empty SIGNING_KEY; Tempest reads getenv(), not the
+# synced .env file. Publish the persisted key into s6's container environment.
+signing_key=$(grep -m1 '^SIGNING_KEY=' "${ENV_TARGET}" 2>/dev/null | cut -d= -f2- || true)
+if [ -n "${signing_key}" ] && [ -d /run/s6/basedir/env ]; then
+    printf '%s' "${signing_key}" > /run/s6/basedir/env/SIGNING_KEY
+fi
+
 as_www_data sh -c "cd '${APP_DIR}' && php tempest migrate:up --force --validate=0"
 as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:install-defaults"
+as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:ensure-admin"
 as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:recover-downloads"
 
 exit 0

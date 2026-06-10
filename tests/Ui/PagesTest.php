@@ -9,7 +9,7 @@ use Tests\Support\Fixtures;
 describe('Global navigation', function (): void {
     it('shows navigation on every page', function (): void {
         foreach (['/', '/sources', '/settings'] as $path) {
-            $this->http->get($path)
+            $this->authedGet($path)
                 ->assertOk()
                 ->assertSee('Dashboard')
                 ->assertSee('Sources')
@@ -18,7 +18,7 @@ describe('Global navigation', function (): void {
     });
 
     it('links the logo area to the dashboard', function (): void {
-        $this->http->get('/sources')
+        $this->authedGet('/sources')
             ->assertOk()
             ->assertSee('href="/"', false);
     });
@@ -32,7 +32,7 @@ describe('Dashboard UI', function (): void {
             'status' => MediaItemStatus::Indexed,
         ]);
 
-        $response = $this->http->get('/')->assertOk();
+        $response = $this->authedGet('/')->assertOk();
 
         $response->assertSee('Overview of your TubeCast library')
             ->assertSee('Recent episodes')
@@ -43,7 +43,7 @@ describe('Dashboard UI', function (): void {
 
 describe('Sources UI', function (): void {
     it('shows create source form', function (): void {
-        $this->http->get('/sources/create')
+        $this->authedGet('/sources/create')
             ->assertOk()
             ->assertSee('Add source')
             ->assertSee('What to save')
@@ -59,7 +59,7 @@ describe('Sources UI', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources')
+        $this->authedGet('/sources')
             ->assertOk()
             ->assertSee('Card Source')
             ->assertSee('/sources/' . $sourceId, false);
@@ -74,7 +74,7 @@ describe('Source detail UI', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId)
+        $this->authedGet('/sources/' . $sourceId)
             ->assertOk()
             ->assertSee('/sources/' . $sourceId . '/edit', false)
             ->assertSee('Episodes')
@@ -87,7 +87,7 @@ describe('Source detail UI', function (): void {
         $source = Fixtures::source(['title' => 'Editable Source']);
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId . '/edit')
+        $this->authedGet('/sources/' . $sourceId . '/edit')
             ->assertOk()
             ->assertSee('Edit source')
             ->assertSee('name="saveVideo"', false)
@@ -102,7 +102,7 @@ describe('Source detail UI', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId)
+        $this->authedGet('/sources/' . $sourceId)
             ->assertOk()
             ->assertSee('Filter:')
             ->assertSee('id="source-stats"', false)
@@ -128,7 +128,7 @@ describe('Source detail UI', function (): void {
 
         $sourceId = ModelId::int($source->id);
 
-        $this->http->get('/sources/' . $sourceId . '/episodes/partial?showFiltered=1')
+        $this->authedGet('/sources/' . $sourceId . '/episodes/partial?showFiltered=1')
             ->assertOk()
             ->assertSee('Excluded:');
     });
@@ -140,7 +140,7 @@ describe('Source detail UI', function (): void {
             'saveAudio' => false,
         ]);
 
-        $this->http->get('/sources')
+        $this->authedGet('/sources')
             ->assertOk()
             ->assertSee('Index only');
     });
@@ -148,7 +148,7 @@ describe('Source detail UI', function (): void {
 
 describe('Settings UI', function (): void {
     it('renders yt-dlp and youtube api settings forms', function (): void {
-        $this->http->get('/settings')
+        $this->authedGet('/settings')
             ->assertOk()
             ->assertSee('yt-dlp overrides')
             ->assertSee('YouTube Data API')

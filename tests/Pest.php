@@ -27,6 +27,7 @@ pest()->extend(IntegrationTestCase::class)
 
         $this->useTestingDatabase();
         $this->database->reset();
+        $this->loginAsAdmin();
     })
     ->in('Feature', 'Ui');
 

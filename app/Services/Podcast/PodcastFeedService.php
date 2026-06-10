@@ -18,11 +18,11 @@ final class PodcastFeedService
 
     public function audioFeedUrl(Feed $feed, string $baseUri): string
     {
-        return rtrim($baseUri, '/') . '/feeds/' . $feed->slug . '/audio.xml?token=' . urlencode($feed->token);
+        return rtrim($baseUri, '/') . '/feeds/' . $feed->token . '/audio.xml';
     }
 
     public function videoFeedUrl(Feed $feed, string $baseUri): string
     {
-        return rtrim($baseUri, '/') . '/feeds/' . $feed->slug . '/video.xml?token=' . urlencode($feed->token);
+        return rtrim($baseUri, '/') . '/feeds/' . $feed->token . '/video.xml';
     }
 }

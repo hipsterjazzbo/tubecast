@@ -8,12 +8,13 @@ use App\Models\Feed;
 use App\Models\Source;
 use App\Services\Podcast\RssFeedService;
 use App\Services\Core\ModelId;
-use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Responses\NotFound;
 use Tempest\Http\Responses\Ok;
 use Tempest\Router\Get;
+use Tempest\Router\Stateless;
 
+#[Stateless]
 final readonly class FeedController
 {
     public function __construct(
@@ -21,10 +22,10 @@ final readonly class FeedController
     ) {
     }
 
-    #[Get('/feeds/{slug}/audio.xml')]
-    public function audio(string $slug, Request $request): Response
+    #[Get('/feeds/{token}/audio.xml')]
+    public function audio(string $token): Response
     {
-        $feed = $this->authorizedFeed($slug, $request);
+        $feed = $this->feedForToken($token);
 
         if ($feed === null || ! $this->sourceSavesAudio($feed)) {
             return new NotFound();
@@ -34,10 +35,10 @@ final readonly class FeedController
             ->addHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
     }
 
-    #[Get('/feeds/{slug}/video.xml')]
-    public function video(string $slug, Request $request): Response
+    #[Get('/feeds/{token}/video.xml')]
+    public function video(string $token): Response
     {
-        $feed = $this->authorizedFeed($slug, $request);
+        $feed = $this->feedForToken($token);
 
         if ($feed === null || ! $this->sourceSavesVideo($feed)) {
             return new NotFound();
@@ -47,19 +48,11 @@ final readonly class FeedController
             ->addHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
     }
 
-    private function authorizedFeed(string $slug, Request $request): ?Feed
+    private function feedForToken(string $token): ?Feed
     {
-        $token = (string) $request->get('token', '');
-
-        $feed = Feed::select()
-            ->where('slug = ?', $slug)
+        return Feed::select()
+            ->where('token = ?', $token)
             ->first();
-
-        if ($feed === null || ! hash_equals($feed->token, (string) $token)) {
-            return null;
-        }
-
-        return $feed;
     }
 
     private function sourceFor(Feed $feed): ?Source

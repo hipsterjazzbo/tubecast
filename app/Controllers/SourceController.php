@@ -34,13 +34,16 @@ use Tempest\CommandBus\CommandBus;
 use Tempest\Http\Responses\Redirect;
 use Tempest\Database\Direction;
 use Tempest\Http\Request;
+use App\Middleware\RequireAuthMiddleware;
 use Tempest\Router\Get;
 use Tempest\Router\Post;
+use Tempest\Router\WithMiddleware;
 use Tempest\View\View;
 
 use function Tempest\env;
 use function Tempest\View\view;
 
+#[WithMiddleware(RequireAuthMiddleware::class)]
 final readonly class SourceController
 {
     public function __construct(
@@ -220,7 +223,6 @@ final readonly class SourceController
 
         Feed::create(
             sourceId: $sourceId,
-            slug: 'source-' . $sourceId,
             title: $source->title ?? 'YouTube feed #' . $sourceId,
             token: bin2hex(random_bytes(16)),
             maxEpisodes: 100,

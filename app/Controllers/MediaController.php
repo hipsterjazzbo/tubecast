@@ -14,7 +14,9 @@ use Tempest\Http\Response;
 use Tempest\Http\Responses\NotFound;
 use Tempest\Http\Status;
 use Tempest\Router\Get;
+use Tempest\Router\Stateless;
 
+#[Stateless]
 final readonly class MediaController
 {
     public function __construct(

@@ -62,7 +62,7 @@ describe('Settings save triggers downloads', function (): void {
         Fixtures::mediaItem($source, ['ytId' => 'ep1', 'status' => MediaItemStatus::Indexed]);
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/settings', [
+        $this->authedPost('/sources/' . $sourceId . '/settings', [
             'saveAudio' => '1',
             'downloadMode' => 'auto',
         ])->assertRedirect('/sources/' . $sourceId);

@@ -12,13 +12,16 @@ use App\Services\Core\DevTools;
 use Tempest\Http\Request;
 use Tempest\Http\Responses\NotFound;
 use Tempest\Http\Responses\Redirect;
+use App\Middleware\RequireAuthMiddleware;
 use Tempest\Router\Get;
 use Tempest\Router\Post;
+use Tempest\Router\WithMiddleware;
 use Tempest\View\View;
 
 use function Tempest\env;
 use function Tempest\View\view;
 
+#[WithMiddleware(RequireAuthMiddleware::class)]
 final readonly class SettingsController
 {
     public function __construct(

@@ -24,7 +24,7 @@ use Tests\Support\Fixtures;
 
 describe('Critical Role video workflow', function (): void {
     it('adds a channel source via HTTP and queues a full index', function (): void {
-        $response = $this->http->post('/sources', [
+        $response = $this->authedPost('/sources', [
             'url' => 'https://www.youtube.com/channel/UCpXBGqwsBkpvcYjsJBQ7LEQ',
             'title' => 'Critical Role',
             'saveVideo' => '1',
@@ -182,7 +182,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
             ->and($source->saveAudio)->toBeTrue()
             ->and($source->url)->toBe('https://www.youtube.com/oculusimperia');
 
-        $this->http->get('/sources/' . ModelId::int($source->id))
+        $this->authedGet('/sources/' . ModelId::int($source->id))
             ->assertOk()
             ->assertSee('Oculus Imperia');
     });
@@ -191,7 +191,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
         $source = Fixtures::oculusImperiaSource(['saveAudio' => true]);
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/settings', [
+        $this->authedPost('/sources/' . $sourceId . '/settings', [
             'title' => 'Oculus Imperia Podcast',
             'saveAudio' => '1',
             'downloadMode' => 'manual',
@@ -259,7 +259,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
         $sourceId = ModelId::int($source->id);
         $itemId = ModelId::int($item->id);
 
-        $this->http->post('/sources/' . $sourceId . '/episodes/' . $itemId . '/download')
+        $this->authedPost('/sources/' . $sourceId . '/episodes/' . $itemId . '/download')
             ->assertRedirect('/sources/' . $sourceId . '#episodes');
 
         $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
@@ -276,7 +276,7 @@ describe('Source lifecycle', function (): void {
         $source = Fixtures::criticalRoleSource();
         $sourceId = ModelId::int($source->id);
 
-        $this->http->post('/sources/' . $sourceId . '/index')
+        $this->authedPost('/sources/' . $sourceId . '/index')
             ->assertRedirect('/sources/' . $sourceId);
 
         $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
