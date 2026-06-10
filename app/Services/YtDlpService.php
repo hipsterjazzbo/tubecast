@@ -153,7 +153,7 @@ final class YtDlpService
 
     /**
      * Streams yt-dlp `-j` output line-by-line so callers can persist episodes while the
-     * catalog scan is still running (full channel indexes can take several minutes).
+     * index scan is still running (full channel indexes can take several minutes).
      *
      * @param callable(VideoInfo): void $onVideo
      */
@@ -210,7 +210,7 @@ final class YtDlpService
         if (! $process->isSuccessful() && ! $done) {
             $error = trim($process->getErrorOutput());
 
-            throw new YtDlpException($error !== '' ? $error : 'yt-dlp catalog scan failed.');
+            throw new YtDlpException($error !== '' ? $error : 'yt-dlp index scan failed.');
         }
     }
 

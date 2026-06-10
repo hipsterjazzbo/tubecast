@@ -33,9 +33,9 @@ final class IndexingProgressService
             episodeCount: $episodeCount,
             matchedCount: $matchedCount,
             filteredCount: $filteredCount,
-            expectedTotal: $source->catalogExpectedTotal,
+            expectedTotal: $source->indexExpectedTotal,
             processedCount: $source->fullIndexProcessedCount,
-            usingApi: $state['full'] > 0 && $source->catalogExpectedTotal !== null,
+            usingApi: $state['full'] > 0 && $source->indexExpectedTotal !== null,
         );
     }
 

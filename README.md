@@ -32,7 +32,7 @@ On first start the container syncs your `.env` into the data volume, runs databa
 3. Choose what to save:
    - **Video** — MP4 files in your downloads folder (good for archiving shows like [Critical Role](https://www.youtube.com/@CriticalRole))
    - **Audio** — M4A podcast files plus an RSS feed (good for music or talk channels like [Oculus Imperia](https://www.youtube.com/oculusimperia))
-   - **Index only** — catalogue episodes without downloading
+   - **Index only** — index episodes without downloading
 4. TubeCast queues a full index automatically. Use **Activity** on the source page to watch progress.
 5. For audio sources, copy the **RSS feed URL** (with token) into your podcast app.
 

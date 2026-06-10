@@ -129,7 +129,7 @@ describe('Critical Role video workflow', function (): void {
             ->and($item->discoveredVia)->toBe(DiscoveredVia::YouTubeApi);
 
         $source->refresh();
-        expect($source->catalogExpectedTotal)->toBe(1)
+        expect($source->indexExpectedTotal)->toBe(1)
             ->and($source->fullIndexProcessedCount)->toBe(1);
     });
 

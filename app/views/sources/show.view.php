@@ -47,7 +47,7 @@
 
                     <form method="post" action="/sources/{{ $source->id }}/index">
                         <button type="submit" class="text-sm px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition"
-                                title="Run a full catalog scan now">Index now</button>
+                                title="Run a full index now">Index now</button>
                     </form>
                     <form method="post" action="/sources/{{ $source->id }}/delete"
                           onsubmit="return confirm('Permanently delete this source, all {{ $stats['total'] }} episodes, and any downloaded files? This cannot be undone.')">

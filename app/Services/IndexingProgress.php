@@ -10,7 +10,7 @@ final readonly class IndexingProgress
 
     public bool $indeterminate;
 
-    public ?int $catalogPercent;
+    public ?int $indexPercent;
 
     public function __construct(
         public bool $active,
@@ -29,7 +29,7 @@ final readonly class IndexingProgress
         $this->barClass = $active
             ? ($this->indeterminate ? 'tc-bar-indeterminate bg-indigo-400' : 'bg-indigo-500 transition-all duration-500 ease-out')
             : 'bg-indigo-500';
-        $this->catalogPercent = $hasExpectedTotal ? $this->percent() : null;
+        $this->indexPercent = $hasExpectedTotal ? $this->percent() : null;
     }
 
     public function label(): string
@@ -44,7 +44,7 @@ final readonly class IndexingProgress
             $processed = $this->processedCount ?? $this->episodeCount;
             $parts[] = "{$processed} / ~{$this->expectedTotal} channel videos";
         } else {
-            $parts[] = "{$this->episodeCount} episodes catalogued";
+            $parts[] = "{$this->episodeCount} episodes indexed";
         }
 
         if ($this->matchedCount > 0 || $this->filteredCount > 0) {
@@ -54,12 +54,12 @@ final readonly class IndexingProgress
 
         if ($this->fullIndexPending) {
             $parts[] = $this->usingApi
-                ? 'YouTube API catalog scan'
-                : 'yt-dlp catalog scan (new episodes appear as found)';
+                ? 'YouTube API full index'
+                : 'yt-dlp full index (new episodes appear as found)';
         } elseif ($this->fastIndexPending) {
             $parts[] = 'Checking YouTube RSS';
         } else {
-            $parts[] = 'Cataloguing…';
+            $parts[] = 'Indexing…';
         }
 
         return implode(' · ', $parts);

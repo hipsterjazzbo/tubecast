@@ -31,7 +31,7 @@
 
         <form method="post" action="/settings/youtube-api" class="mb-8 space-y-4 rounded-xl border border-slate-800 bg-slate-900/40 p-6">
             <h2 class="text-sm font-medium text-slate-300 uppercase tracking-wide">YouTube Data API</h2>
-            <p class="text-sm text-slate-500">Used for full catalog indexing instead of yt-dlp. Downloads still use yt-dlp. You can also set <code class="text-slate-400">YOUTUBE_API_KEY</code> in the environment.</p>
+            <p class="text-sm text-slate-500">Used for full indexing via the YouTube Data API instead of yt-dlp. Downloads still use yt-dlp. You can also set <code class="text-slate-400">YOUTUBE_API_KEY</code> in the environment.</p>
             <p :if="$youtubeApiConfigured" class="text-sm text-emerald-300">API key is configured.</p>
             <label class="block">
                 <span class="text-sm text-slate-300">API key</span>

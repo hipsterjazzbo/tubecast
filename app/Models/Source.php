@@ -29,6 +29,6 @@ final class Source implements Bindable
     public ?DateTime $lastFastIndexedAt = null;
     public ?DateTime $lastFullIndexedAt = null;
     public int $fastIndexFailures = 0;
-    public ?int $catalogExpectedTotal = null;
+    public ?int $indexExpectedTotal = null;
     public ?int $fullIndexProcessedCount = null;
 }

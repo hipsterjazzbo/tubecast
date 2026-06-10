@@ -35,10 +35,10 @@ describe('IndexingProgress', function (): void {
         );
 
         expect($progress->label())
-            ->toContain('15 episodes catalogued')
+            ->toContain('15 episodes indexed')
             ->toContain('10 match')
             ->toContain('3 excluded')
-            ->toContain('yt-dlp catalog scan')
+            ->toContain('yt-dlp full index')
             ->and($progress->barClass)->toContain('tc-bar-indeterminate');
     });
 
@@ -58,7 +58,7 @@ describe('IndexingProgress', function (): void {
 
         expect($progress->label())
             ->toContain('40 / ~100 channel videos')
-            ->toContain('YouTube API catalog scan')
+            ->toContain('YouTube API full index')
             ->and($progress->percent())->toBe(40)
             ->and($progress->widthStyle())->toBe('width: 40%')
             ->and($progress->indeterminate)->toBeFalse();

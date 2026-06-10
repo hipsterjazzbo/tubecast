@@ -29,9 +29,9 @@
                         <span class="text-indigo-300 font-medium shrink-0">Indexing</span>
                         <span class="text-slate-400 truncate">{{ $indexingProgress->label() }}</span>
                     </div>
-                    <div class="flex items-center justify-between text-xs text-slate-500" :if="$indexingProgress->catalogPercent !== null">
-                        <span>Catalog</span>
-                        <span>{{ $indexingProgress->catalogPercent }}%</span>
+                    <div class="flex items-center justify-between text-xs text-slate-500" :if="$indexingProgress->indexPercent !== null">
+                        <span>Index progress</span>
+                        <span>{{ $indexingProgress->indexPercent }}%</span>
                     </div>
                     <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden relative">
                         <div class="h-full rounded-full {{ $indexingProgress->barClass }}"

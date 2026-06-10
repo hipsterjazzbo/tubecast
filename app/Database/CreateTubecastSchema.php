@@ -66,7 +66,7 @@ final class CreateTubecastSchema implements MigratesUp
             ->datetime('lastFastIndexedAt', nullable: true)
             ->datetime('lastFullIndexedAt', nullable: true)
             ->integer('fastIndexFailures', default: 0)
-            ->integer('catalogExpectedTotal', nullable: true)
+            ->integer('indexExpectedTotal', nullable: true)
             ->integer('fullIndexProcessedCount', nullable: true)
             ->datetime('createdAt', current: true)
             ->datetime('updatedAt', current: true);

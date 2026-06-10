@@ -144,7 +144,7 @@ final readonly class SourceCommandHandlers
         }
 
         $expected = $this->youtubeApi->expectedVideoCount($source->type, $source->url, $channelId);
-        $source->catalogExpectedTotal = $expected;
+        $source->indexExpectedTotal = $expected;
         $source->fullIndexProcessedCount = 0;
         $source->save();
 
@@ -173,7 +173,7 @@ final readonly class SourceCommandHandlers
 
     private function fullIndexViaYtDlp(Source $source): void
     {
-        $source->catalogExpectedTotal = null;
+        $source->indexExpectedTotal = null;
         $source->fullIndexProcessedCount = null;
         $source->save();
 
