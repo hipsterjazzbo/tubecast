@@ -4,6 +4,7 @@ FROM serversideup/php:8.5-fpm-nginx
 
 ARG PUID=33
 ARG PGID=33
+ARG COMPOSER_DEV=0
 
 USER root
 
@@ -22,7 +23,11 @@ RUN install-php-extensions intl \
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+RUN if [ "$COMPOSER_DEV" = "1" ]; then \
+        composer install --optimize-autoloader --no-interaction --no-scripts; \
+    else \
+        composer install --no-dev --optimize-autoloader --no-interaction --no-scripts; \
+    fi
 
 COPY . .
 RUN composer dump-autoload --optimize && php tempest discovery:generate --no-interaction

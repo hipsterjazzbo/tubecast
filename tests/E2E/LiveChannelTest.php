@@ -4,61 +4,71 @@ declare(strict_types=1);
 
 use App\Services\YouTubeChannelResolver;
 use App\Services\YouTubeRssService;
+use Tests\Support\E2eNetwork;
 
-describe('Live channel resolution', function (): void {
-    it('resolves Critical Role from a /c/ URL', function (): void {
-        $resolver = $this->container->get(YouTubeChannelResolver::class);
+describe('Live YouTube integration', function (): void {
+    describe('Live channel resolution', function (): void {
+        it('resolves Critical Role from a /c/ URL', function (): void {
+            $resolver = $this->container->get(YouTubeChannelResolver::class);
 
-        $channelId = $resolver->resolve('https://www.youtube.com/c/criticalrole');
+            $channelId = $resolver->resolve('https://www.youtube.com/c/criticalrole');
 
-        expect($channelId)->toBe('UCpXBGqwsBkpvcYjsJBQ7LEQ');
+            expect($channelId)->toBe('UCpXBGqwsBkpvcYjsJBQ7LEQ');
+        });
+
+        it('resolves Oculus Imperia from its vanity URL', function (): void {
+            $resolver = $this->container->get(YouTubeChannelResolver::class);
+
+            $channelId = $resolver->resolve('https://www.youtube.com/oculusimperia');
+
+            expect($channelId)->not->toBeNull()
+                ->and(strlen($channelId))->toBeGreaterThan(10);
+        });
     });
 
-    it('resolves Oculus Imperia from its vanity URL', function (): void {
-        $resolver = $this->container->get(YouTubeChannelResolver::class);
+    describe('Live RSS indexing', function (): void {
+        it('fetches recent entries from the Critical Role channel feed', function (): void {
+            $rss = new YouTubeRssService();
+            $url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCpXBGqwsBkpvcYjsJBQ7LEQ';
 
-        $channelId = $resolver->resolve('https://www.youtube.com/oculusimperia');
+            $entries = $rss->fetchEntries($url);
 
-        expect($channelId)->not->toBeNull()
-            ->and(strlen($channelId))->toBeGreaterThan(10);
+            expect($entries)->not->toBeEmpty();
+
+            $first = $entries[0];
+            expect($first->videoId)->not->toBe('')
+                ->and($first->title)->not->toBe('')
+                ->and($first->url)->toContain('watch?v=');
+        });
+
+        it('reads the Critical Role feed title', function (): void {
+            $rss = new YouTubeRssService();
+            $url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCpXBGqwsBkpvcYjsJBQ7LEQ';
+
+            $title = $rss->fetchFeedTitle($url);
+
+            expect($title)->not->toBeNull()
+                ->and($title)->toContain('Critical Role');
+        });
     });
-});
 
-describe('Live RSS indexing', function (): void {
-    it('fetches recent entries from the Critical Role channel feed', function (): void {
-        $rss = new YouTubeRssService();
-        $url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCpXBGqwsBkpvcYjsJBQ7LEQ';
+    describe('Live yt-dlp metadata', function (): void {
+        it('extracts Critical Role channel metadata without downloading media', function (): void {
+            $config = $this->container->get(\App\TubecastConfig::class);
+            $probe = new \Symfony\Component\Process\Process([$config->ytDlpBinary, '--version']);
+            $probe->run();
 
-        $entries = $rss->fetchEntries($url);
+            if (! $probe->isSuccessful()) {
+                $this->markTestSkipped('yt-dlp is not available: ' . trim($probe->getErrorOutput()));
+            }
 
-        expect($entries)->not->toBeEmpty();
+            $ytDlp = $this->container->get(\App\Services\YtDlpService::class);
+            $info = $ytDlp->extractInfo('https://www.youtube.com/@CriticalRole');
 
-        $first = $entries[0];
-        expect($first->videoId)->not->toBe('')
-            ->and($first->title)->not->toBe('')
-            ->and($first->url)->toContain('watch?v=');
+            expect($info->raw['channel_id'] ?? null)->toBe('UCpXBGqwsBkpvcYjsJBQ7LEQ');
+        })->group('slow');
     });
-
-    it('reads the Critical Role feed title', function (): void {
-        $rss = new YouTubeRssService();
-        $url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCpXBGqwsBkpvcYjsJBQ7LEQ';
-
-        $title = $rss->fetchFeedTitle($url);
-
-        expect($title)->not->toBeNull()
-            ->and($title)->toContain('Critical Role');
-    });
-});
-
-describe('Live yt-dlp metadata', function (): void {
-    it('extracts Critical Role channel metadata without downloading media', function (): void {
-        $ytDlp = new Ytdlphp\YtDlp('yt-dlp');
-
-        $info = $ytDlp->extractInfo('https://www.youtube.com/@CriticalRole', [
-            'flatPlaylist' => true,
-            'playlistEnd' => 1,
-        ]);
-
-        expect($info->raw['channel_id'] ?? $info->raw['id'] ?? null)->toBe('UCpXBGqwsBkpvcYjsJBQ7LEQ');
-    })->group('slow');
-});
+})->skip(
+    fn (): bool => getenv('TUBECAST_E2E') !== '1' || ! E2eNetwork::isYouTubeReachable(),
+    'Set TUBECAST_E2E=1 and ensure the test environment can reach YouTube over HTTPS.',
+);

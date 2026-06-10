@@ -12,29 +12,41 @@ use Tests\IntegrationTestCase;
 
 pest()->extend(IntegrationTestCase::class)
     ->beforeEach(function (): void {
-        $this->useTestingDatabase();
-        $this->database->reset();
+        $dataPath = getenv('DATA_PATH') ?: dirname(__DIR__) . '/data';
+        $storedCommands = rtrim($dataPath, '/') . '/stored-commands';
 
-        $directory = dirname(__DIR__) . '/data/stored-commands';
-        foreach (glob($directory . '/*.pending.txt') ?: [] as $path) {
+        foreach ([$storedCommands, '/tmp/tubecast-test/downloads', '/tmp/tubecast-test/podcast'] as $directory) {
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+        }
+
+        foreach (glob($storedCommands . '/*.pending.txt') ?: [] as $path) {
             unlink($path);
         }
+
+        $this->useTestingDatabase();
+        $this->database->reset();
     })
     ->in('Feature', 'Ui');
 
 pest()->extend(IntegrationTestCase::class)
     ->beforeEach(function (): void {
-        $this->useTestingDatabase();
-        $this->database->reset();
+        $dataPath = getenv('DATA_PATH') ?: dirname(__DIR__) . '/data';
+        $storedCommands = rtrim($dataPath, '/') . '/stored-commands';
 
-        $directory = dirname(__DIR__) . '/data/stored-commands';
-        foreach (glob($directory . '/*.pending.txt') ?: [] as $path) {
+        foreach ([$storedCommands, '/tmp/tubecast-test/downloads', '/tmp/tubecast-test/podcast'] as $directory) {
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+        }
+
+        foreach (glob($storedCommands . '/*.pending.txt') ?: [] as $path) {
             unlink($path);
         }
 
-        if (getenv('TUBECAST_E2E') !== '1') {
-            $this->markTestSkipped('Set TUBECAST_E2E=1 to run live network tests.');
-        }
+        $this->useTestingDatabase();
+        $this->database->reset();
     })
     ->in('E2E');
 

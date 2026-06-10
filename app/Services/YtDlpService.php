@@ -164,6 +164,10 @@ final class YtDlpService
             ->noWarnings()
             ->quiet();
 
+        if ($stopAfterFirst) {
+            $options = $options->playlistEnd(1);
+        }
+
         $process = new Process(
             command: [$this->config->ytDlpBinary, ...$options->toArray(), $url],
             cwd: $this->config->downloadsPath,

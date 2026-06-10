@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\MediaItemStatus;
+use App\Enums\RssFeedFormat;
 use App\Models\Feed;
 use App\Models\MediaItem;
 use Tempest\Database\Direction;
@@ -16,15 +17,15 @@ final readonly class RssFeedService
 {
     public function buildAudio(Feed $feed): string
     {
-        return $this->build($feed, 'audio');
+        return $this->build($feed, RssFeedFormat::Audio);
     }
 
     public function buildVideo(Feed $feed): string
     {
-        return $this->build($feed, 'video');
+        return $this->build($feed, RssFeedFormat::Video);
     }
 
-    private function build(Feed $feed, string $format): string
+    private function build(Feed $feed, RssFeedFormat $format): string
     {
         $query = MediaItem::select()
             ->where('status = ?', MediaItemStatus::Completed->value)
@@ -32,9 +33,8 @@ final readonly class RssFeedService
             ->limit($feed->maxEpisodes ?? 100);
 
         $query = match ($format) {
-            'video' => $query->where('filePath IS NOT NULL'),
-            'audio' => $query->where('podcastFilePath IS NOT NULL'),
-            default => $query,
+            RssFeedFormat::Video => $query->where('filePath IS NOT NULL'),
+            RssFeedFormat::Audio => $query->where('podcastFilePath IS NOT NULL'),
         };
 
         if ($feed->sourceId !== null) {
@@ -45,8 +45,8 @@ final readonly class RssFeedService
 
         $baseUri = rtrim(env('BASE_URI', 'http://localhost:8000'), '/');
         $feedUrl = match ($format) {
-            'video' => $baseUri . '/feeds/' . $feed->slug . '/video.xml?token=' . urlencode($feed->token),
-            default => $baseUri . '/feeds/' . $feed->slug . '/audio.xml?token=' . urlencode($feed->token),
+            RssFeedFormat::Video => $baseUri . '/feeds/' . $feed->slug . '/video.xml?token=' . urlencode($feed->token),
+            RssFeedFormat::Audio => $baseUri . '/feeds/' . $feed->slug . '/audio.xml?token=' . urlencode($feed->token),
         };
 
         $rssRoot = '<?xml version="1.0" encoding="UTF-8"?>'
@@ -72,12 +72,12 @@ final readonly class RssFeedService
             }
 
             [$url, $length, $mime] = match ($format) {
-                'video' => [
+                RssFeedFormat::Video => [
                     $baseUri . '/media/' . $feed->token . '/' . $item->ytId . '/file',
                     $item->filePath !== null && is_file($item->filePath) ? (filesize($item->filePath) ?: 0) : 0,
                     'video/mp4',
                 ],
-                default => [
+                RssFeedFormat::Audio => [
                     $baseUri . '/media/' . $feed->token . '/' . $item->ytId . '/audio.m4a',
                     $item->podcastFileSize ?? 0,
                     $item->podcastMime ?? 'audio/mp4',

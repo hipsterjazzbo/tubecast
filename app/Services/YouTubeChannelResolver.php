@@ -23,7 +23,11 @@ final class YouTubeChannelResolver
         }
 
         if ($this->youtubeApi->isConfigured()) {
-            $fromApi = $this->youtubeApi->resolveChannelId($url);
+            try {
+                $fromApi = $this->youtubeApi->resolveChannelId($url);
+            } catch (YouTubeDataApiException) {
+                $fromApi = null;
+            }
 
             if ($fromApi !== null) {
                 return $fromApi;

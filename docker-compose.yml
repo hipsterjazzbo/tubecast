@@ -7,6 +7,9 @@ services:
         PGID: ${PGID:-33}
     ports:
       - "${TUBECAST_PORT:-8742}:8080"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - .env
     volumes:

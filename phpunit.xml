@@ -37,5 +37,11 @@
         <env name="BASE_URI" value="http://localhost"/>
         <env name="CACHE" value="null"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="YOUTUBE_API_KEY" value=""/>
+        <env name="YT_DLP_SLEEP_INTERVAL" value="0"/>
+        <env name="YT_DLP_SLEEP_REQUESTS" value="0"/>
+        <env name="DATA_PATH" value="/tmp/tubecast-test"/>
+        <env name="DOWNLOADS_PATH" value="/tmp/tubecast-test/downloads"/>
+        <env name="PODCAST_PATH" value="/tmp/tubecast-test/podcast"/>
     </php>
 </phpunit>

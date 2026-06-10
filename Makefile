@@ -1,4 +1,4 @@
-.PHONY: setup up dev down logs shell migrate reset
+.PHONY: setup up dev down logs shell migrate reset test test-e2e
 
 # Arch often ships `docker` as a Podman shim without `compose` — use podman compose instead.
 # Override for real Docker: make up COMPOSE="docker compose"
@@ -32,3 +32,9 @@ down:
 
 reset:
 	$(COMPOSE) $(COMPOSE_FILES) down -v
+
+test:
+	$(COMPOSE) $(DEV_COMPOSE_FILES) exec -T tubecast composer test
+
+test-e2e:
+	$(COMPOSE) $(DEV_COMPOSE_FILES) exec -T tubecast composer test:e2e

@@ -65,8 +65,8 @@ Cookies and proxy can also be set in the **Settings** UI (stored in the database
 
 | Command | Code changes | When to use |
 |---------|--------------|-------------|
-| `make dev` | Bind-mounts `app/` and `public/` — edit locally, refresh browser | Day-to-day development |
-| `make up` | Baked into image — rebuild after code changes | Testing production builds |
+| `make dev` | Bind-mounts `app/`, `public/`, and `tests/`; image includes Composer **dev** deps (Pest, PHPUnit) | Day-to-day development |
+| `make up` | Baked into image with production deps only — rebuild after code changes | Testing production builds |
 
 Both modes use the same `.env`. Restart the container after changing environment variables.
 
@@ -79,9 +79,12 @@ make logs              # follow container logs
 make shell             # shell into the container
 make migrate           # run pending migrations
 make reset && make dev # wipe data volume and start fresh
-composer test          # run the test suite on the host
-composer test:e2e      # live network tests (requires yt-dlp + internet)
+composer test          # run tests on the host (requires local composer install)
+make test              # run tests inside the dev container
+make test-e2e          # live network tests inside the dev container (needs outbound HTTPS to YouTube)
 ```
+
+E2E tests skip quickly when `TUBECAST_E2E` is unset, or when the container cannot reach YouTube. If `make test-e2e` used to hang, recreate the dev stack (`make dev`) so DNS is configured, or run `composer test:e2e` on the host instead.
 
 ## How downloads work
 

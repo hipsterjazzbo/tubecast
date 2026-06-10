@@ -10,6 +10,15 @@ abstract class IntegrationTestCase extends IntegrationTest
 {
     protected string $root = __DIR__ . '/../';
 
+    protected function setUp(): void
+    {
+        putenv('ENVIRONMENT=testing');
+        $_ENV['ENVIRONMENT'] = 'testing';
+        $_SERVER['ENVIRONMENT'] = 'testing';
+
+        parent::setUp();
+    }
+
     /** @return \Tempest\Discovery\DiscoveryLocation[] */
     protected function discoverTestLocations(): array
     {
