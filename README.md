@@ -10,21 +10,42 @@ Self-hosted YouTube archiver with optional podcast feeds. Subscribe to channels,
 - **Filter** episodes by duration, title pattern, shorts, and live streams
 - **Publish** token-protected podcast RSS feeds with HTTP Range support for seeking
 
-## Quick start
+## Deploy
+
+Requires [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) with Compose.
 
 ```bash
 git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
-make setup          # copies .env.example → .env
-# Edit .env: set ADMIN_USERNAME and ADMIN_PASSWORD (required)
-make dev            # dev mode: live code reload via bind mounts
-# or: make up       # production-like: code baked into the image
+docker compose up -d
 ```
 
-Open **http://localhost:8742** and sign in (change `TUBECAST_PORT` in `.env` if needed). The container will not start without `ADMIN_PASSWORD` set.
+The image is published to [GitHub Container Registry](https://github.com/hipsterjazzbo/tubecast/pkgs/container/tubecast) on each push to `main` (tagged `latest`).
 
-On first start the container syncs your `.env` into the data volume, runs database migrations, and seeds default download profiles. SQLite, downloaded media, and podcast files all live in the `tubecast-data` Docker volume.
+Open **http://localhost:8742** and sign in with the default credentials:
 
-> **Arch Linux:** `/usr/bin/docker` is often the Podman compatibility shim and does not support `docker compose`. Use **`podman compose`** or **`make dev`** instead. With real Docker: `make dev COMPOSE="docker compose"`.
+- **Username:** `admin`
+- **Password:** `changeme`
+
+Change the password before exposing TubeCast to a network — set `ADMIN_PASSWORD` in a `.env` file next to `docker-compose.yml` (Compose reads it automatically) and run `docker compose up -d` again.
+
+On first start the container creates a data volume, runs database migrations, and seeds default download profiles. SQLite, downloaded media, and podcast files all live in the `tubecast-data` Docker volume.
+
+### Configuration
+
+Optional settings can go in a `.env` file (see `.env.example`). Common overrides:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `TUBECAST_PORT` | `8742` | Host port for the web UI |
+| `ADMIN_USERNAME` | `admin` | Admin login username |
+| `ADMIN_PASSWORD` | `changeme` | Admin login password |
+| `BASE_URI` | `http://localhost:8742` | Public URL for RSS enclosures and media links |
+| `PUID` / `PGID` | `33` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
+| `YOUTUBE_API_KEY` | _(empty)_ | Optional YouTube Data API key |
+
+Cookies and proxy can also be set in the **Settings** UI (stored in the database).
+
+> **Arch Linux:** `/usr/bin/docker` is often the Podman compatibility shim. Use **`podman compose up -d`** instead.
 
 ## Adding your first source
 
@@ -47,48 +68,34 @@ Each source gets a private RSS feed. The feed URL contains a random token in the
 
 - Feed URLs look like `/feeds/{token}/audio.xml`
 - Media enclosures use `/media/{token}/{video-id}/audio.m4a`
-- Audio enclosures are served efficiently by nginx (with HTTP 206 Range support for scrubbing/seeking)
+- Audio enclosures are served efficiently by Caddy (with HTTP 206 Range support for scrubbing/seeking)
 
-## Configuration
+## Development
 
-All settings live in **`.env`** at the project root (see `.env.example`). Docker Compose and the app both read this file; the container entrypoint syncs Tempest-relevant values to `/data/config/.env` on start.
+For working on TubeCast itself — builds the image locally instead of pulling from GHCR:
 
-| Variable | Purpose |
-|----------|---------|
-| `TUBECAST_PORT` | Host port for the web UI |
-| `ADMIN_USERNAME` | Admin login username (required) |
-| `ADMIN_PASSWORD` | Admin login password (required) |
-| `PUID` / `PGID` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
-| `BASE_URI` | Public URL for RSS enclosures and media links |
-| `YOUTUBE_API_KEY` | Optional YouTube Data API key |
-| `YT_DLP_*` | yt-dlp throttling (sleep intervals, rate limits) |
-
-Cookies and proxy can also be set in the **Settings** UI (stored in the database).
-
-## Dev vs production-like
+```bash
+git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
+make setup          # copies .env.example → .env and prompts for admin password
+make dev            # dev mode: bind-mounts app code for live reload
+# or: make up       # production-like local build
+```
 
 | Command | Code changes | When to use |
 |---------|--------------|-------------|
-| `make dev` | Bind-mounts `app/`, `public/`, and `tests/`; image includes Composer **dev** deps (Pest, PHPUnit) | Day-to-day development |
+| `make dev` | Bind-mounts `app/` and `tests/`; image includes Composer **dev** deps (Pest, PHPUnit) | Day-to-day development |
 | `make up` | Baked into image with production deps only — rebuild after code changes | Testing production builds |
-
-Both modes use the same `.env`. Restart the container after changing environment variables.
-
-Set `PUID` and `PGID` to match the owner of your data volume. On first start, init re-maps the container `www-data` user to those IDs and `chown`s `/data`.
-
-## Useful commands
 
 ```bash
 make logs              # follow container logs
 make shell             # shell into the container
 make migrate           # run pending migrations
 make reset && make dev # wipe data volume and start fresh
-composer test          # run tests on the host (requires local composer install)
 make test              # run tests inside the dev container
-make test-e2e          # live network tests inside the dev container (needs outbound HTTPS to YouTube)
+make assets            # rebuild frontend assets on the host
 ```
 
-E2E tests skip quickly when `TUBECAST_E2E` is unset, or when the container cannot reach YouTube. If `make test-e2e` used to hang, recreate the dev stack (`make dev`) so DNS is configured, or run `composer test:e2e` on the host instead.
+E2E tests (`make test-e2e`) need outbound HTTPS to YouTube.
 
 ## How downloads work
 
@@ -101,7 +108,7 @@ Video files land in `DOWNLOADS_PATH` (default `/data/downloads`). Podcast audio 
 
 ## Stack
 
-Built with [Tempest](https://tempestphp.com), [hazel/ytdlphp](https://packagist.org/packages/hazel/ytdlphp), and yt-dlp. The Docker image is based on [serversideup/php:8.5-fpm-nginx](https://hub.docker.com/r/serversideup/php) with yt-dlp, ffmpeg, and deno copied from [fhfa/yt-dlp](https://hub.docker.com/r/fhfa/yt-dlp).
+Built with [Tempest](https://tempestphp.com), [hazel/ytdlphp](https://packagist.org/packages/hazel/ytdlphp), and yt-dlp. The Docker image is based on [FrankenPHP](https://frankenphp.dev) with yt-dlp, ffmpeg, and deno copied from [fhfa/yt-dlp](https://hub.docker.com/r/fhfa/yt-dlp).
 
 ## License
 

@@ -1,0 +1,9 @@
+# Local image builds for development. Used by: make up / make dev
+services:
+  tubecast:
+    build:
+      context: .
+      args:
+        PUID: ${PUID:-33}
+        PGID: ${PGID:-33}
+    image: tubecast:local

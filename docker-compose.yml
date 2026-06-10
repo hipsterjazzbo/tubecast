@@ -1,20 +1,36 @@
 services:
   tubecast:
-    build:
-      context: .
-      args:
-        PUID: ${PUID:-33}
-        PGID: ${PGID:-33}
+    image: ghcr.io/hipsterjazzbo/tubecast:latest
+    restart: unless-stopped
     ports:
       - "${TUBECAST_PORT:-8742}:8080"
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    env_file:
-      - .env
+    environment:
+      SERVER_NAME: ":8080"
+      PUID: ${PUID:-33}
+      PGID: ${PGID:-33}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      BASE_URI: ${BASE_URI:-http://localhost:8742}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      INTERNAL_CACHES: ${INTERNAL_CACHES:-true}
+      DISCOVERY_CACHE: ${DISCOVERY_CACHE:-partial}
+      DEBUG_LOG_PATH: ${DEBUG_LOG_PATH:-null}
+      SERVER_LOG_PATH: ${SERVER_LOG_PATH:-null}
+      DB_DATABASE: ${DB_DATABASE:-/data/database.sqlite}
+      DATA_PATH: ${DATA_PATH:-/data}
+      DOWNLOADS_PATH: ${DOWNLOADS_PATH:-/data/downloads}
+      PODCAST_PATH: ${PODCAST_PATH:-/data/podcast}
+      YT_DLP_BINARY: ${YT_DLP_BINARY:-yt-dlp}
+      YT_DLP_WORKER_CONCURRENCY: ${YT_DLP_WORKER_CONCURRENCY:-1}
+      YT_DLP_SLEEP_INTERVAL: ${YT_DLP_SLEEP_INTERVAL:-5}
+      YT_DLP_SLEEP_REQUESTS: ${YT_DLP_SLEEP_REQUESTS:-1}
+      YT_DLP_LIMIT_RATE: ${YT_DLP_LIMIT_RATE:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
     volumes:
       - tubecast-data:/data
-    restart: unless-stopped
 
 volumes:
   tubecast-data:

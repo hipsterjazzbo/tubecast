@@ -7,6 +7,5 @@ services:
     volumes:
       - tubecast-data:/data
       - ./app:/var/www/html/app:Z
-      - ./public:/var/www/html/public:Z
       - ./tests:/var/www/html/tests:Z
       - ./phpunit.xml:/var/www/html/phpunit.xml:Z

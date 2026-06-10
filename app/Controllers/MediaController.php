@@ -39,7 +39,7 @@ final readonly class MediaController
             return new NotFound();
         }
 
-        $internalUri = $this->internalMediaUri($item->filePath, $this->config->downloadsPath, '/internal-downloads/');
+        $internalUri = $this->internalMediaUri($item->filePath, $this->config->downloadsPath, 'downloads/');
 
         if ($internalUri === null) {
             return new NotFound();
@@ -76,7 +76,7 @@ final readonly class MediaController
             return new NotFound();
         }
 
-        $internalUri = $this->internalMediaUri($item->podcastFilePath, $this->config->podcastPath, '/internal-media/');
+        $internalUri = $this->internalMediaUri($item->podcastFilePath, $this->config->podcastPath, 'podcast/');
 
         if ($internalUri === null) {
             return new NotFound();

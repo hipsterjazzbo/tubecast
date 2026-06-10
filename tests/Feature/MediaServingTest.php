@@ -33,7 +33,7 @@ describe('Media serving', function (): void {
 
         $this->http->get('/media/secret-token/' . $ytId . '/audio.m4a')
             ->assertOk()
-            ->assertHeaderContains('X-Accel-Redirect', '/internal-media/' . $sourceId . '/' . $ytId . '.m4a');
+            ->assertHeaderContains('X-Accel-Redirect', 'podcast/' . $sourceId . '/' . $ytId . '.m4a');
 
         unlink($file);
     });

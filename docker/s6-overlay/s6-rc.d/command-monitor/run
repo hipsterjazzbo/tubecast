@@ -1,2 +1,0 @@
-#!/command/with-contenv sh
-exec bash -c 'cd "${APP_BASE_DIR:-/var/www/html}" && exec php tempest command:monitor'

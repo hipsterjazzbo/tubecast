@@ -1,0 +1,28 @@
+{
+	frankenphp {
+		php_ini memory_limit 512M
+		php_ini max_execution_time 300
+	}
+}
+
+{$SERVER_NAME::8080} {
+	root * /var/www/html/public
+	encode zstd gzip
+
+	request_header X-Sendfile-Type x-accel-redirect
+
+	intercept {
+		@accel header X-Accel-Redirect *
+		handle_response @accel {
+			root * /data
+			rewrite * {resp.header.X-Accel-Redirect}
+			method GET
+			header -X-Accel-Redirect
+			file_server
+		}
+	}
+
+	php_server {
+		try_files {path} index.php
+	}
+}
