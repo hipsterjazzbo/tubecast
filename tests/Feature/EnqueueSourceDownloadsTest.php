@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Commands\DownloadMediaCommand;
 use App\Commands\EnqueueSourceDownloadsCommand;
 use App\Enums\MediaItemStatus;
-use App\Support\ModelId;
+use App\Services\Core\ModelId;
 use Tests\Support\Fixtures;
 
 describe('Enqueue source downloads', function (): void {
@@ -16,8 +16,8 @@ describe('Enqueue source downloads', function (): void {
             'status' => MediaItemStatus::Indexed,
         ]);
 
-        $this->container->get(\App\Commands\Handlers\SourceCommandHandlers::class)
-            ->handleEnqueueDownloads(new EnqueueSourceDownloadsCommand(ModelId::int($source->id)));
+        $this->container->get(\App\Commands\Handlers\EnqueueSourceDownloadsCommandHandler::class)
+            ->__invoke(new EnqueueSourceDownloadsCommand(ModelId::int($source->id)));
 
         $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
         $downloadCommands = array_values(array_filter(
@@ -43,8 +43,8 @@ describe('Enqueue source downloads', function (): void {
             ], JSON_THROW_ON_ERROR),
         ]);
 
-        $this->container->get(\App\Commands\Handlers\SourceCommandHandlers::class)
-            ->handleEnqueueDownloads(new EnqueueSourceDownloadsCommand(ModelId::int($source->id)));
+        $this->container->get(\App\Commands\Handlers\EnqueueSourceDownloadsCommandHandler::class)
+            ->__invoke(new EnqueueSourceDownloadsCommand(ModelId::int($source->id)));
 
         $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
         $itemId = ModelId::int($item->id);

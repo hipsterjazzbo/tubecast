@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Enums\MediaItemStatus;
 use App\Models\Feed;
 use App\Models\Source;
-use App\Services\EpisodeFilterService;
-use App\Support\ModelId;
+use App\Services\Source\EpisodeFilterService;
+use App\Services\Core\ModelId;
 use Tests\Support\Fixtures;
 
 describe('Episode filter evaluation', function (): void {

@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vite-plugin-tempest": "^2.13.0"
+  },
+  "dependencies": {
+    "htmx.org": "^2.0.4"
+  }
+}

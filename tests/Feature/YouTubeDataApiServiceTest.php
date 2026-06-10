@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\SourceType;
 use App\Models\GlobalSetting;
-use App\Services\SettingsRepository;
-use App\Services\YouTubeChannelPageScraper;
-use App\Services\YouTubeDataApiException;
-use App\Services\YouTubeDataApiService;
-use App\Services\YouTubeRssUrlBuilder;
+use App\Repositories\SettingsRepository;
+use App\Services\YouTube\YouTubeChannelPageScraper;
+use App\Services\YouTube\YouTubeDataApiException;
+use App\Services\YouTube\YouTubeDataApiService;
+use App\Services\YouTube\YouTubeRssUrlBuilder;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;

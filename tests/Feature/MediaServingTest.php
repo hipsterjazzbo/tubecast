@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\MediaItemStatus;
-use App\Support\ModelId;
-use App\TubecastConfig;
+use App\Services\Core\ModelId;
+use App\Config\TubecastConfig;
 use Tests\Support\Fixtures;
 
 describe('Media serving', function (): void {

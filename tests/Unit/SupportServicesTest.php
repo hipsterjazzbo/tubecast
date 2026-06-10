@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\SourceType;
-use App\Services\IndexingProgress;
-use App\Services\YouTubeRssUrlBuilder;
+use App\Services\Indexing\IndexingProgress;
+use App\Services\YouTube\YouTubeRssUrlBuilder;
 
 describe('IndexingProgress', function (): void {
     it('is inactive when no jobs are running', function (): void {

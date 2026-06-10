@@ -38,3 +38,6 @@ test:
 
 test-e2e:
 	$(COMPOSE) $(DEV_COMPOSE_FILES) exec -T tubecast composer test:e2e
+
+assets:
+	npm ci && npm run build

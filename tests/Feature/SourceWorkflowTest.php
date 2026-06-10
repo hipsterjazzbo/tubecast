@@ -11,11 +11,11 @@ use App\Models\Feed;
 use App\Models\GlobalSetting;
 use App\Models\MediaItem;
 use App\Models\Source;
-use App\Services\DownloadRecoveryService;
-use App\Services\OutputPathBuilder;
-use App\Services\YouTubeDataApiService;
-use App\Support\ModelId;
-use App\TubecastConfig;
+use App\Services\Download\DownloadRecoveryService;
+use App\Services\Download\OutputPathBuilder;
+use App\Services\YouTube\YouTubeDataApiService;
+use App\Services\Core\ModelId;
+use App\Config\TubecastConfig;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -96,28 +96,23 @@ describe('Critical Role video workflow', function (): void {
         ]);
 
         $api = new YouTubeDataApiService(
-            $this->container->get(\App\Services\SettingsRepository::class),
-            $this->container->get(\App\Services\YouTubeRssUrlBuilder::class),
-            $this->container->get(\App\Services\YouTubeChannelPageScraper::class),
+            $this->container->get(\App\Repositories\SettingsRepository::class),
+            $this->container->get(\App\Services\YouTube\YouTubeRssUrlBuilder::class),
+            $this->container->get(\App\Services\YouTube\YouTubeChannelPageScraper::class),
             new Client(['handler' => HandlerStack::create($mock)]),
         );
 
-        $handlers = new \App\Commands\Handlers\SourceCommandHandlers(
-            $this->container->get(\App\Services\YouTubeRssService::class),
-            $this->container->get(\App\Services\YtDlpService::class),
-            $this->container->get(\App\Services\ThrottleGuard::class),
-            $this->container->get(\App\Services\OutputPathBuilder::class),
-            $this->container->get(\App\Services\PodcastVariantService::class),
-            $this->container->get(\App\Services\PodcastFeedService::class),
-            $this->container->get(\App\Services\SourceMetadataService::class),
-            $this->container->get(\App\Services\EpisodeFilterService::class),
+        $handler = new \App\Commands\Handlers\FullIndexSourceCommandHandler(
+            $this->container->get(\App\Services\Download\YtDlpService::class),
+            $this->container->get(\App\Services\Core\ThrottleGuard::class),
+            $this->container->get(\App\Services\Source\SourceMetadataService::class),
+            $this->container->get(\App\Services\Source\EpisodeFilterService::class),
+            $this->container->get(\App\Services\Source\MediaItemIndexingService::class),
             $api,
-            $this->container->get(\App\Services\DownloadRecoveryService::class),
             $this->container->get(\Psr\Log\LoggerInterface::class),
-            $this->container->get(\Tempest\CommandBus\CommandBus::class),
         );
 
-        $handlers->handleFullIndex(new FullIndexSourceCommand($sourceId));
+        $handler->__invoke(new FullIndexSourceCommand($sourceId));
 
         $item = MediaItem::select()
             ->where('sourceId = ? AND ytId = ?', $sourceId, 'cr001')
@@ -155,7 +150,7 @@ describe('Critical Role video workflow', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\PodcastVariantService::class),
+            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
             $this->container->get(\Tempest\CommandBus\CommandBus::class),
             $this->container->get(\Tempest\Log\Logger::class),
         );
@@ -231,7 +226,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\PodcastVariantService::class),
+            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
             $this->container->get(\Tempest\CommandBus\CommandBus::class),
             $this->container->get(\Tempest\Log\Logger::class),
         );
@@ -312,26 +307,19 @@ XML;
             new Response(200, ['Content-Type' => 'application/atom+xml'], $rssXml),
         ]);
 
-        $rss = new \App\Services\YouTubeRssService(
+        $rss = new \App\Services\YouTube\YouTubeRssService(
             new Client(['handler' => HandlerStack::create($mock)]),
         );
 
-        $handlers = new \App\Commands\Handlers\SourceCommandHandlers(
+        $handler = new \App\Commands\Handlers\FastIndexSourceCommandHandler(
             $rss,
-            $this->container->get(\App\Services\YtDlpService::class),
-            $this->container->get(\App\Services\ThrottleGuard::class),
-            $this->container->get(\App\Services\OutputPathBuilder::class),
-            $this->container->get(\App\Services\PodcastVariantService::class),
-            $this->container->get(\App\Services\PodcastFeedService::class),
-            $this->container->get(\App\Services\SourceMetadataService::class),
-            $this->container->get(\App\Services\EpisodeFilterService::class),
-            $this->container->get(\App\Services\YouTubeDataApiService::class),
-            $this->container->get(\App\Services\DownloadRecoveryService::class),
-            $this->container->get(\Psr\Log\LoggerInterface::class),
+            $this->container->get(\App\Services\Source\SourceMetadataService::class),
+            $this->container->get(\App\Services\Source\EpisodeFilterService::class),
             $this->container->get(\Tempest\CommandBus\CommandBus::class),
+            $this->container->get(\Psr\Log\LoggerInterface::class),
         );
 
-        $handlers->handleFastIndex(new FastIndexSourceCommand($sourceId));
+        $handler->__invoke(new FastIndexSourceCommand($sourceId));
 
         $item = MediaItem::select()
             ->where('sourceId = ? AND ytId = ?', $sourceId, 'rss-new')

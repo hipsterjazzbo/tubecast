@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\SourceEpisodeQuery;
+use App\Services\Source\SourceEpisodeQuery;
 
 describe('SourceEpisodeQuery', function (): void {
     it('builds partial urls with query params', function (): void {

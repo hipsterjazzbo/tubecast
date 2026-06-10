@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\DownloadMode;
-use App\Support\SourceFilters;
+use App\Services\Source\SourceFilters;
 
 describe('SourceFilters', function (): void {
     it('round-trips through JSON', function (): void {

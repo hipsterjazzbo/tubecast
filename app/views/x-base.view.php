@@ -12,18 +12,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <x-slot name="head"/>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <style>
-        @keyframes tc-bar-slide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(400%); }
-        }
-        .tc-bar-indeterminate {
-            width: 35%;
-            animation: tc-bar-slide 1.4s ease-in-out infinite;
-        }
-    </style>
+    <x-vite-tags />
 </head>
 <body class="min-h-full bg-slate-950 text-slate-100 antialiased">
 <x-slot/>

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Services\OutputPathBuilder;
-use App\TubecastConfig;
+use App\Services\Download\OutputPathBuilder;
+use App\Config\TubecastConfig;
 
 describe('OutputPathBuilder download progress', function (): void {
     it('tracks podcast directory files and info json for audio downloads', function (): void {

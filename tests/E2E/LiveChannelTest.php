@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Services\YouTubeChannelResolver;
-use App\Services\YouTubeRssService;
+use App\Services\YouTube\YouTubeChannelResolver;
+use App\Services\YouTube\YouTubeRssService;
 use Tests\Support\E2eNetwork;
 
 describe('Live YouTube integration', function (): void {
@@ -54,7 +54,7 @@ describe('Live YouTube integration', function (): void {
 
     describe('Live yt-dlp metadata', function (): void {
         it('extracts Critical Role channel metadata without downloading media', function (): void {
-            $config = $this->container->get(\App\TubecastConfig::class);
+            $config = $this->container->get(\App\Config\TubecastConfig::class);
             $probe = new \Symfony\Component\Process\Process([$config->ytDlpBinary, '--version']);
             $probe->run();
 
@@ -62,7 +62,7 @@ describe('Live YouTube integration', function (): void {
                 $this->markTestSkipped('yt-dlp is not available: ' . trim($probe->getErrorOutput()));
             }
 
-            $ytDlp = $this->container->get(\App\Services\YtDlpService::class);
+            $ytDlp = $this->container->get(\App\Services\Download\YtDlpService::class);
             $info = $ytDlp->extractInfo('https://www.youtube.com/@CriticalRole');
 
             expect($info->raw['channel_id'] ?? null)->toBe('UCpXBGqwsBkpvcYjsJBQ7LEQ');

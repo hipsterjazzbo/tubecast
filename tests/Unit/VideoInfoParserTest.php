@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\VideoInfoParser;
+use App\Services\Download\VideoInfoParser;
 
 describe('VideoInfoParser', function (): void {
     it('parses yt-dlp json lines without tempest bootstrap', function (): void {

@@ -1,5 +1,17 @@
 FROM fhfa/yt-dlp:2026.3.17 AS tools
 
+FROM node:22-alpine AS assets
+
+WORKDIR /build
+
+ENV TEMPEST_PLUGIN_CONFIGURATION_PATH=vite.tempest.json
+
+COPY package.json package-lock.json vite.config.ts vite.tempest.json ./
+RUN npm ci
+
+COPY app/main.entrypoint.css app/main.entrypoint.ts app/
+RUN npm run build
+
 FROM serversideup/php:8.5-fpm-nginx
 
 ARG PUID=33
@@ -30,6 +42,7 @@ RUN if [ "$COMPOSER_DEV" = "1" ]; then \
     fi
 
 COPY . .
+COPY --from=assets /build/public/build ./public/build
 RUN composer dump-autoload --optimize && php tempest discovery:generate --no-interaction
 
 COPY docker/nginx/tubecast.conf /etc/nginx/server-opts.d/tubecast.conf

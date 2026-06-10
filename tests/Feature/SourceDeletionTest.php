@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\Feed;
 use App\Models\MediaItem;
 use App\Models\Source;
-use App\Support\ModelId;
+use App\Services\Core\ModelId;
 use Tests\Support\Fixtures;
 
 describe('Source deletion', function (): void {

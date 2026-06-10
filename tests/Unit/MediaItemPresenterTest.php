@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\MediaItemStatus;
 use App\Models\MediaItem;
-use App\Services\DownloadProgress;
-use App\Support\MediaItemPresenter;
+use App\Services\Download\DownloadProgress;
+use App\Services\Source\MediaItemPresenter;
 
 describe('MediaItemPresenter', function (): void {
     it('formats duration for long episodes', function (): void {

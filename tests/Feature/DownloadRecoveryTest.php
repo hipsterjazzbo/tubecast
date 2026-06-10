@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Enums\MediaItemStatus;
-use App\Services\DownloadRecoveryService;
-use App\Services\OutputPathBuilder;
-use App\TubecastConfig;
+use App\Services\Download\DownloadRecoveryService;
+use App\Services\Download\OutputPathBuilder;
+use App\Config\TubecastConfig;
 use Tests\Support\Fixtures;
 
 describe('Download recovery', function (): void {
@@ -30,7 +30,7 @@ describe('Download recovery', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\PodcastVariantService::class),
+            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
             $this->container->get(\Tempest\CommandBus\CommandBus::class),
             $this->container->get(\Tempest\Log\Logger::class),
         );

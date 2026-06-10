@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Commands\EnqueueSourceDownloadsCommand;
 use App\Commands\FullIndexSourceCommand;
 use App\Commands\ReapplyEpisodeFiltersCommand;
-use App\Services\EpisodeFilterService;
-use App\Services\SourceIndexingTriggers;
-use App\Support\SourceFilters;
+use App\Services\Source\EpisodeFilterService;
+use App\Services\Source\SourceIndexingTriggers;
+use App\Services\Source\SourceFilters;
 use Tests\Support\Fixtures;
 
 describe('SourceIndexingTriggers', function (): void {

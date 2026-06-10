@@ -1,0 +1,9 @@
+{
+  "build_directory": "build",
+  "bridge_file_name": "vite-tempest",
+  "manifest": "manifest.json",
+  "entrypoints": [
+    "app/main.entrypoint.css",
+    "app/main.entrypoint.ts"
+  ]
+}

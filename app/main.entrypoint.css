@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@keyframes tc-bar-slide {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(400%); }
+}
+
+.tc-bar-indeterminate {
+	width: 35%;
+	animation: tc-bar-slide 1.4s ease-in-out infinite;
+}

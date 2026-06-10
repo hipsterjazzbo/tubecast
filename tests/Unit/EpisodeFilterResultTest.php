@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\EpisodeFilterResult;
+use App\Services\Source\EpisodeFilterResult;
 
 describe('EpisodeFilterResult', function (): void {
     it('labels matching episodes', function (): void {

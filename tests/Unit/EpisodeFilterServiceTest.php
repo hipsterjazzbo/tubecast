@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Services\EpisodeFilterService;
+use App\Services\Source\EpisodeFilterService;
 use Tests\Support\Fixtures;
 
 describe('EpisodeFilterService', function (): void {

@@ -9,12 +9,10 @@
         "hazel/ytdlphp": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^12.5.8",
         "carthage-software/mago": "^1.0",
         "friendsofphp/php-cs-fixer": "^3.95",
-        "squizlabs/php_codesniffer": "^4.0",
         "pestphp/pest": "^4.0",
-        "pestphp/pest-plugin-drift": "^4.1"
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "autoload": {
         "psr-4": {
@@ -30,7 +28,9 @@
         "post-autoload-dump": [
             "@php ./vendor/bin/tempest discovery:generate --no-interaction"
         ],
-        "phpunit": "vendor/bin/phpunit --display-warnings --display-skipped --display-deprecations --display-errors --display-notices",
+        "post-package-update": [
+            "@php ./vendor/bin/tempest discovery:generate --no-interaction"
+        ],
         "test": "ENVIRONMENT=testing vendor/bin/pest",
         "test:unit": "ENVIRONMENT=testing vendor/bin/pest --testsuite=Unit",
         "test:feature": "ENVIRONMENT=testing vendor/bin/pest --testsuite=Feature",
