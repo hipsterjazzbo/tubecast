@@ -26,26 +26,24 @@ Open **http://localhost:8742** and sign in with the default credentials:
 - **Username:** `admin`
 - **Password:** `changeme`
 
-Change the password before exposing TubeCast to a network — set `ADMIN_PASSWORD` in a `.env` file next to `docker-compose.yml` (Compose reads it automatically) and run `docker compose up -d` again.
+Change the password before exposing TubeCast to a network — copy `.env.docker.example` to `.env.docker`, set `TUBECAST_ADMIN_PASSWORD`, and run `docker compose --env-file .env.docker up -d`.
 
 On first start the container creates a data volume, runs database migrations, and seeds default download profiles. SQLite, downloaded media, and podcast files all live in the `tubecast-data` Docker volume.
 
 ### Configuration
 
-Optional settings can go in a `.env` file (see `.env.example`). Common overrides:
+`docker-compose.yml` ships with sane defaults — no env file required. Optional overrides use `.env.docker` (see `.env.docker.example`); variables are prefixed with `TUBECAST_` so they do not conflict with a developer's lerd `.env` in the same clone.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `TUBECAST_PORT` | `8742` | Host port for the web UI |
-| `ADMIN_USERNAME` | `admin` | Admin login username |
-| `ADMIN_PASSWORD` | `changeme` | Admin login password |
-| `BASE_URI` | `http://localhost:8742` | Public URL for RSS enclosures and media links |
-| `PUID` / `PGID` | `33` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
-| `YOUTUBE_API_KEY` | _(empty)_ | Optional YouTube Data API key |
+| `TUBECAST_ADMIN_USERNAME` | `admin` | Admin login username |
+| `TUBECAST_ADMIN_PASSWORD` | `changeme` | Admin login password |
+| `TUBECAST_BASE_URI` | `http://localhost:8742` | Public URL for RSS enclosures and media links |
+| `TUBECAST_PUID` / `TUBECAST_PGID` | `33` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
+| `TUBECAST_YOUTUBE_API_KEY` | _(empty)_ | Optional YouTube Data API key |
 
 Cookies and proxy can also be set in the **Settings** UI (stored in the database).
-
-> **Arch Linux:** `/usr/bin/docker` is often the Podman compatibility shim. Use **`podman compose up -d`** instead.
 
 ## Adding your first source
 
@@ -72,18 +70,49 @@ Each source gets a private RSS feed. The feed URL contains a random token in the
 
 ## Development
 
-For working on TubeCast itself — builds the image locally instead of pulling from GHCR:
+TubeCast supports two local workflows:
+
+| Workflow | Best for | Config |
+|----------|----------|--------|
+| **[lerd](https://github.com/hipsterjazzbo/lerd)** | Day-to-day app development | `.env` from `.env.example` |
+| **Docker Compose** | Testing the published image / container build | optional `.env.docker` |
+
+A lerd `.env` and Docker can coexist in the same clone — Compose ignores lerd paths and only reads `TUBECAST_*` overrides from `.env.docker`.
+
+### lerd (recommended)
+
+Requires [lerd](https://github.com/hipsterjazzbo/lerd) (Podman-based PHP dev environment).
 
 ```bash
 git clone https://github.com/hipsterjazzbo/tubecast.git && cd tubecast
-make setup          # copies .env.example → .env and prompts for admin password
+cp .env.example .env
+lerd env_setup
+lerd setup
+```
+
+Open **https://tubecast.test** (lerd generates a local TLS cert). Start background workers from the lerd dashboard or:
+
+```bash
+lerd worker start command_bus --site tubecast
+lerd worker start schedule --site tubecast
+lerd worker start vite --site tubecast
+```
+
+Host paths (`database/`, `data/`) live in the project tree. Run tests with `composer test`.
+
+### Docker (container-based dev)
+
+Builds the image locally instead of pulling from GHCR:
+
+```bash
+make setup-docker   # optional: copies .env.docker.example → .env.docker
 make dev            # dev mode: bind-mounts app code for live reload
 # or: make up       # production-like local build
 ```
 
 | Command | Code changes | When to use |
 |---------|--------------|-------------|
-| `make dev` | Bind-mounts `app/` and `tests/`; image includes Composer **dev** deps (Pest, PHPUnit) | Day-to-day development |
+| `make dev` | Bind-mounts `app/` and `tests/`; image includes Composer **dev** deps (Pest, PHPUnit) | Hacking on the Docker image |
 | `make up` | Baked into image with production deps only — rebuild after code changes | Testing production builds |
 
 ```bash

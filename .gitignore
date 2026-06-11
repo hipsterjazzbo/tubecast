@@ -1,5 +1,6 @@
 /vendor/
 /.env
+/.env.docker
 /.tempest/
 /node_modules/
 /public/build/
@@ -8,3 +9,4 @@
 /console.log
 .php-cs-fixer.cache
 .phpunit.result.cache
+.env.before_lerd
