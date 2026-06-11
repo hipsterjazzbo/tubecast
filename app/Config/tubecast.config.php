@@ -15,11 +15,17 @@ $resolvePath = static function (string $path): string {
     return root_path($path);
 };
 
+$ytDlpBinary = env('YT_DLP_BINARY', 'yt-dlp');
+
+if (str_contains($ytDlpBinary, '/') && ! str_starts_with($ytDlpBinary, '/') && ! str_starts_with($ytDlpBinary, ':')) {
+    $ytDlpBinary = root_path($ytDlpBinary);
+}
+
 return new TubecastConfig(
     dataPath: $resolvePath(env('DATA_PATH', 'data')),
     downloadsPath: $resolvePath(env('DOWNLOADS_PATH', 'data/downloads')),
     podcastPath: $resolvePath(env('PODCAST_PATH', 'data/podcast')),
-    ytDlpBinary: env('YT_DLP_BINARY', 'yt-dlp'),
+    ytDlpBinary: $ytDlpBinary,
     workerConcurrency: (int) env('YT_DLP_WORKER_CONCURRENCY', '1'),
     sleepInterval: (float) env('YT_DLP_SLEEP_INTERVAL', '5'),
     sleepRequests: (float) env('YT_DLP_SLEEP_REQUESTS', '1'),

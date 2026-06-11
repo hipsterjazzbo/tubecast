@@ -5,6 +5,7 @@
 /node_modules/
 /public/build/
 /data/
+/data/bin/
 /database/*.sqlite
 /console.log
 .php-cs-fixer.cache

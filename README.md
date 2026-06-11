@@ -90,6 +90,9 @@ lerd env_setup
 lerd setup
 ```
 
+`lerd setup` runs migrations and `tubecast:init` (downloads yt-dlp if missing, creates data dirs, seeds defaults). To
+diagnose tools: `php tempest tubecast:init --check`.
+
 Open **https://tubecast.test** (lerd generates a local TLS cert). Start background workers from the lerd dashboard or:
 
 ```bash

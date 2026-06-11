@@ -1,0 +1,16 @@
+[
+  {
+    "uri": "/home/hazel/Projects/tubecast/.tempest/scheduler/last-schedule-run.cache.php",
+    "symbols": [],
+    "snippet": "a:2:{s:16:\"fastIndexSources\";i:1781152380;s:16:\"fullIndexSources\";i:1780987920;}",
+    "snippetStartLine": 1,
+    "snippetEndLine": 1,
+    "chunks": [
+      {
+        "text": "a:2:{s:16:\"fastIndexSources\";i:1781152380;s:16:\"fullIndexSources\";i:1780987920;}",
+        "startLine": 1,
+        "endLine": 1
+      }
+    ]
+  }
+]

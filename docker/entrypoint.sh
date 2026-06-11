@@ -39,7 +39,7 @@ remap_www_data() {
     fi
 }
 
-tubecast_init() {
+tubecast_bootstrap() {
     if [ -z "${ADMIN_PASSWORD:-}" ]; then
         echo "tubecast init: ADMIN_PASSWORD is required. Set ADMIN_PASSWORD in docker-compose.yml or a .env file." >&2
         exit 1
@@ -101,13 +101,12 @@ EOF
     fi
 
     as_www_data sh -c "cd '${APP_DIR}' && php tempest migrate:up --force --validate=0"
-    as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:install-defaults"
-    as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:ensure-admin"
+    as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:init --skip-deps --admin"
     as_www_data sh -c "cd '${APP_DIR}' && php tempest tubecast:recover-downloads"
 }
 
 remap_www_data
 chown -R www-data:www-data /var/www/html 2>/dev/null || true
-tubecast_init
+tubecast_bootstrap
 
 exec supervisord -n -c /etc/supervisor/supervisord.conf

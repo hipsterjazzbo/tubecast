@@ -1,13 +1,13 @@
 {
-    "mcpServers": {
-        "lerd": {
-            "args": [
-                "mcp"
-            ],
-            "command": "lerd",
-            "env": {
-                "LERD_SITE_PATH": "/home/hazel/Projects/tubecast"
-            }
-        }
+  "mcpServers": {
+    "lerd": {
+      "command": "lerd",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "LERD_SITE_PATH": "/home/hazel/Projects/tubecast"
+      }
     }
+  }
 }

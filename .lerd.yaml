@@ -79,6 +79,9 @@ framework_def:
           default: true
           check:
             composer: tempest/database
+        - label: Initialize TubeCast
+          command: php tempest tubecast:init
+          default: true
     commands:
         - name: discovery:clear
           label: Clear discovery cache
@@ -90,6 +93,11 @@ framework_def:
           command: php tempest migrate:up --force
           output: silent
           icon: database
+        - name: init
+          label: Initialize TubeCast
+          command: php tempest tubecast:init
+          output: text
+          icon: check
         - name: cache:clear
           label: Clear caches
           command: php tempest cache:clear --force
@@ -103,3 +111,6 @@ framework_def:
 secured: true
 services:
     - sqlite
+workers:
+  - schedule
+  - vite
