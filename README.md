@@ -10,6 +10,14 @@ Self-hosted YouTube archiver with optional podcast feeds. Subscribe to channels,
 - **Filter** episodes by duration, title pattern, shorts, and live streams
 - **Publish** token-protected podcast RSS feeds with HTTP Range support for seeking
 
+## Requirements
+
+| Dependency      | Version                                        |
+|-----------------|------------------------------------------------|
+| PHP             | `^8.5`                                         |
+| Node.js         | `22+` (for building frontend assets)           |
+| Docker / Podman | Latest with Compose (for containerised deploy) |
+
 ## Deploy
 
 Requires [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) with Compose.
@@ -129,6 +137,64 @@ make assets            # rebuild frontend assets on the host
 
 E2E tests (`make test-e2e`) need outbound HTTPS to YouTube.
 
+## Scripts
+
+### Composer
+
+| Script                   | Description                                    |
+|--------------------------|------------------------------------------------|
+| `composer test`          | Run all test suites (Pest)                     |
+| `composer test:unit`     | Unit tests only                                |
+| `composer test:feature`  | Feature tests only                             |
+| `composer test:ui`       | UI tests only                                  |
+| `composer test:e2e`      | E2E tests (requires network access to YouTube) |
+| `composer lint:psr`      | Check PSR-12 compliance (phpcs)                |
+| `composer fix:psr`       | Auto-fix PSR-12 issues (phpcbf)                |
+| `composer lint:cs-fixer` | Dry-run php-cs-fixer                           |
+| `composer fix:cs-fixer`  | Apply php-cs-fixer fixes                       |
+
+### npm
+
+| Script          | Description                          |
+|-----------------|--------------------------------------|
+| `npm run dev`   | Start Vite dev server                |
+| `npm run build` | Build frontend assets for production |
+
+## Tests
+
+Tests use [Pest](https://pestphp.com) (PHPUnit under the hood). Configuration lives in `phpunit.xml`.
+
+| Suite   | Directory        | Notes                                                  |
+|---------|------------------|--------------------------------------------------------|
+| Unit    | `tests/Unit/`    | Fast, isolated tests                                   |
+| Feature | `tests/Feature/` | Application-level tests                                |
+| Ui      | `tests/Ui/`      | UI / view tests                                        |
+| E2e     | `tests/E2E/`     | End-to-end; set `TUBECAST_E2E=1`, needs YouTube access |
+
+Tests run against an in-memory SQLite database with temp data paths. See `phpunit.xml` `<php>` block for test-specific
+env overrides.
+
+## Environment variables
+
+The app reads these variables at runtime (set via `.env` for lerd, or baked into the container):
+
+| Variable                    | Default                    | Purpose                                                  |
+|-----------------------------|----------------------------|----------------------------------------------------------|
+| `ENVIRONMENT`               | `local`                    | App environment (`local`, `production`, `testing`, etc.) |
+| `BASE_URI`                  | `https://tubecast.test`    | Public base URL                                          |
+| `ADMIN_USERNAME`            | `admin`                    | Admin login                                              |
+| `ADMIN_PASSWORD`            | `changeme`                 | Admin password                                           |
+| `DB_DATABASE`               | `database/database.sqlite` | SQLite database path                                     |
+| `DATA_PATH`                 | `data`                     | Root data directory                                      |
+| `DOWNLOADS_PATH`            | `data/downloads`           | Downloaded video files                                   |
+| `PODCAST_PATH`              | `data/podcast`             | Podcast audio files                                      |
+| `YT_DLP_BINARY`             | `yt-dlp`                   | Path to yt-dlp binary                                    |
+| `YT_DLP_WORKER_CONCURRENCY` | `1`                        | Parallel download workers                                |
+| `YT_DLP_SLEEP_INTERVAL`     | `5`                        | Seconds between yt-dlp requests                          |
+| `YT_DLP_SLEEP_REQUESTS`     | `1`                        | Request count before sleeping                            |
+| `YT_DLP_LIMIT_RATE`         | _(empty)_                  | Download rate limit (e.g. `5M`)                          |
+| `YOUTUBE_API_KEY`           | _(empty)_                  | YouTube Data API key (also settable in UI)               |
+
 ## How downloads work
 
 TubeCast runs background workers (command monitor + scheduler) inside the container. When episodes match your filters:
@@ -138,9 +204,54 @@ TubeCast runs background workers (command monitor + scheduler) inside the contai
 
 Video files land in `DOWNLOADS_PATH` (default `/data/downloads`). Podcast audio lands in `PODCAST_PATH/{source-id}/`. Interrupted downloads are recovered on restart.
 
+## Project structure
+
+```
+tubecast/
+├── app/                    # Application source code
+│   ├── Authentication/     # Auth logic
+│   ├── Commands/           # Tempest console commands
+│   ├── Config/             # Configuration classes
+│   ├── Controllers/        # HTTP controllers
+│   ├── Database/           # Migrations
+│   ├── Enums/              # Enumerations
+│   ├── Middleware/         # HTTP middleware
+│   ├── Models/             # Domain models
+│   ├── Repositories/       # Data access layer
+│   ├── Requests/           # Form / API requests
+│   ├── Services/           # Business logic services
+│   ├── Tasks/              # Scheduled / background tasks
+│   └── views/              # Tempest Blade-style views
+├── tests/
+│   ├── Unit/               # Unit tests
+│   ├── Feature/            # Feature tests
+│   ├── Ui/                 # UI tests
+│   ├── E2E/                # End-to-end tests
+│   └── Support/            # Test helpers
+├── public/                 # Web root (entry point)
+├── database/               # SQLite database (local dev)
+├── data/                   # Downloads & podcast files (local dev)
+├── docker/                 # Container config (Caddyfile, s6, entrypoint)
+├── Dockerfile              # Multi-stage production image
+├── docker-compose.yml      # Production Compose
+├── docker-compose.build.yml # Local build overlay
+├── docker-compose.dev.yml  # Dev overlay (bind-mounts, dev deps)
+├── Makefile                # Developer shortcuts
+├── composer.json           # PHP dependencies & scripts
+├── package.json            # Node dependencies (Vite, Tailwind)
+├── vite.config.ts          # Vite / Tailwind CSS build config
+├── phpunit.xml             # Test configuration
+├── phpcs.xml.dist          # PHP_CodeSniffer rules (PSR-12)
+├── mago.toml               # Mago static analysis config
+└── .php-cs-fixer.dist.php  # php-cs-fixer rules
+```
+
 ## Stack
 
 Built with [Tempest](https://tempestphp.com), [hazel/ytdlphp](https://packagist.org/packages/hazel/ytdlphp), and yt-dlp. The Docker image is based on [FrankenPHP](https://frankenphp.dev) with yt-dlp, ffmpeg, and deno copied from [fhfa/yt-dlp](https://hub.docker.com/r/fhfa/yt-dlp).
+
+Frontend assets are built with [Vite](https://vite.dev), [Tailwind CSS](https://tailwindcss.com)
+v4, [TypeScript](https://www.typescriptlang.org), and [htmx](https://htmx.org).
 
 ## License
 
