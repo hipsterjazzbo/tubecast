@@ -11,3 +11,10 @@
 .php-cs-fixer.cache
 .phpunit.result.cache
 .env.before_lerd
+
+# Other editor / AI assistant configs
+/.ai/
+/.cortexide/
+/.cursor/
+/.junie/
+/.kilo/
