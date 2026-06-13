@@ -231,4 +231,14 @@ describe('Settings', function (): void {
             'youtubeApiKey' => 'test-api-key',
         ])->assertRedirect('/settings');
     });
+
+    it('renders media server configuration on the settings page', function (): void {
+        Fixtures::mediaServer(['name' => 'Settings Plex']);
+
+        $this->authedGet('/settings')
+            ->assertOk()
+            ->assertSee('Media servers')
+            ->assertSee('Settings Plex')
+            ->assertSee('Metadata providers');
+    });
 });

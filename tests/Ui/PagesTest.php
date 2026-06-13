@@ -155,4 +155,18 @@ describe('Settings UI', function (): void {
             ->assertSee('action="/settings/yt-dlp"', false)
             ->assertSee('action="/settings/youtube-api"', false);
     });
+
+    it('renders media server and metadata provider sections', function (): void {
+        Fixtures::mediaServer(['name' => 'UI Plex Server']);
+
+        $this->authedGet('/settings')
+            ->assertOk()
+            ->assertSee('id="media-servers"', false)
+            ->assertSee('Media servers')
+            ->assertSee('UI Plex Server')
+            ->assertSee('action="/settings/media-servers"', false)
+            ->assertSee('id="metadata-providers"', false)
+            ->assertSee('Metadata providers')
+            ->assertSee('action="/settings/metadata-providers"', false);
+    });
 });

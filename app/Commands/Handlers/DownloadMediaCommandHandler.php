@@ -17,6 +17,8 @@ use App\Services\Download\YtDlpService;
 use App\Services\Podcast\PodcastVariantService;
 use App\Services\Source\EpisodeFilterService;
 use App\Services\Source\MediaItemIndexingService;
+use App\Services\MediaServer\MediaItemCompletionService;
+use App\Services\MediaServer\MediaServerOutputTemplateResolver;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Tempest\CommandBus\CommandHandler;
@@ -32,6 +34,8 @@ final readonly class DownloadMediaCommandHandler
         private EpisodeFilterService $episodeFilter,
         private MediaItemIndexingService $indexing,
         private DownloadRecoveryService $downloadRecovery,
+        private MediaItemCompletionService $completion,
+        private MediaServerOutputTemplateResolver $outputTemplates,
         private LoggerInterface $logger,
     ) {
     }
@@ -91,8 +95,7 @@ final readonly class DownloadMediaCommandHandler
                 }
 
                 if ($this->generatePodcastFromExistingVideo($source, $item, $profile)) {
-                    $item->status = MediaItemStatus::Completed;
-                    $item->save();
+                    $this->completion->markCompleted($source, $item);
 
                     return;
                 }
@@ -101,6 +104,7 @@ final readonly class DownloadMediaCommandHandler
                 $item->save();
 
                 $audioOnly = $source->saveAudio && ! $source->saveVideo;
+                $outputTemplate = $this->outputTemplates->resolveVideoTemplate($source, $item);
 
                 if ($audioOnly) {
                     $this->ytDlp->forAudioDownload($source, $profile)->download($url);
@@ -113,7 +117,7 @@ final readonly class DownloadMediaCommandHandler
 
                     $item->filePath = null;
                 } else {
-                    $this->ytDlp->forSource($source, $profile)->download($url);
+                    $this->ytDlp->forSource($source, $profile, $outputTemplate)->download($url);
                     $item->filePath = $this->paths->findVideoFile($item->ytId);
 
                     if ($source->saveAudio) {
@@ -128,12 +132,14 @@ final readonly class DownloadMediaCommandHandler
                     }
                 }
 
-                $item->status = MediaItemStatus::Completed;
+                $this->completion->markCompleted($source, $item);
             });
         } catch (Throwable $exception) {
-            $item->status = $this->isThrottled($exception)
-                ? MediaItemStatus::Throttled
-                : MediaItemStatus::Failed;
+            if ($item->status !== MediaItemStatus::Completed) {
+                $item->status = $this->isThrottled($exception)
+                    ? MediaItemStatus::Throttled
+                    : MediaItemStatus::Failed;
+            }
             $this->logger->error('Download failed for {ytId}: {message}', [
                 'ytId' => $item->ytId,
                 'message' => $exception->getMessage(),

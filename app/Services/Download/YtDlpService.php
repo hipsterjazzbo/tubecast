@@ -65,10 +65,10 @@ final class YtDlpService
         return $options;
     }
 
-    public function forSource(Source $source, ?MediaProfile $profile = null): YtDlp
+    public function forSource(Source $source, ?MediaProfile $profile = null, ?string $outputTemplate = null): YtDlp
     {
         return $this->client->withDefaultOptions(
-            $this->videoDownloadOptions($source, $profile),
+            $this->videoDownloadOptions($source, $profile, $outputTemplate),
         );
     }
 
@@ -79,10 +79,10 @@ final class YtDlpService
         );
     }
 
-    private function videoDownloadOptions(Source $source, ?MediaProfile $profile): Options
+    private function videoDownloadOptions(Source $source, ?MediaProfile $profile, ?string $outputTemplate = null): Options
     {
         $options = $this->defaultOptions();
-        $template = $source->outputTemplate ?? $this->paths->defaultTemplate();
+        $template = $outputTemplate ?? $source->outputTemplate ?? $this->paths->defaultTemplate();
         $options = $options->output($template);
 
         if ($profile !== null) {

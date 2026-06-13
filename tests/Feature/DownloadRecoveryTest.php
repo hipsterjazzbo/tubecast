@@ -6,6 +6,7 @@ use App\Config\TubecastConfig;
 use App\Enums\MediaItemStatus;
 use App\Services\Download\DownloadRecoveryService;
 use App\Services\Download\OutputPathBuilder;
+use App\Services\MediaServer\MediaItemCompletionService;
 use App\Services\Podcast\PodcastVariantService;
 use Tempest\CommandBus\CommandBus;
 use Tempest\Log\Logger;
@@ -35,6 +36,7 @@ describe('Download recovery', function (): void {
             new OutputPathBuilder($config),
             $this->container->get(PodcastVariantService::class),
             $this->container->get(CommandBus::class),
+            $this->container->get(MediaItemCompletionService::class),
             $this->container->get(Logger::class),
         );
 

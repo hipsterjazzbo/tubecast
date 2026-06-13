@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\MetadataMode;
 use App\Enums\SourceType;
 use Tempest\Database\IsDatabaseModel;
 use Tempest\DateTime\DateTime;
@@ -31,4 +32,9 @@ final class Source implements Bindable
     public int $fastIndexFailures = 0;
     public ?int $indexExpectedTotal = null;
     public ?int $fullIndexProcessedCount = null;
+    public bool $notifyMediaServer = false;
+    public ?int $mediaServerLibraryId = null;
+    public MetadataMode $metadataMode = MetadataMode::Local;
+    public ?int $tmdbSeriesId = null;
+    public ?int $tvdbSeriesId = null;
 }

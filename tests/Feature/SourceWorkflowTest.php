@@ -20,6 +20,7 @@ use App\Services\Core\ThrottleGuard;
 use App\Services\Download\DownloadRecoveryService;
 use App\Services\Download\OutputPathBuilder;
 use App\Services\Download\YtDlpService;
+use App\Services\MediaServer\MediaItemCompletionService;
 use App\Services\Podcast\PodcastVariantService;
 use App\Services\Source\EpisodeFilterService;
 use App\Services\Source\MediaItemIndexingService;
@@ -34,6 +35,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Tempest\CommandBus\CommandBus;
+use Tempest\EventBus\EventBus;
 use Tempest\CommandBus\CommandRepository;
 use Tempest\Log\Logger;
 use Tests\Support\Fixtures;
@@ -168,6 +170,7 @@ describe('Critical Role video workflow', function (): void {
             new OutputPathBuilder($config),
             $this->container->get(PodcastVariantService::class),
             $this->container->get(CommandBus::class),
+            $this->container->get(MediaItemCompletionService::class),
             $this->container->get(Logger::class),
         );
 
@@ -244,6 +247,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
             new OutputPathBuilder($config),
             $this->container->get(PodcastVariantService::class),
             $this->container->get(CommandBus::class),
+            $this->container->get(MediaItemCompletionService::class),
             $this->container->get(Logger::class),
         );
 
@@ -331,7 +335,7 @@ XML;
             $rss,
             $this->container->get(SourceMetadataService::class),
             $this->container->get(EpisodeFilterService::class),
-            $this->container->get(CommandBus::class),
+            $this->container->get(EventBus::class),
             $this->container->get(LoggerInterface::class),
         );
 

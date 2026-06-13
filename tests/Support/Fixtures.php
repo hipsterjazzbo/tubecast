@@ -8,9 +8,13 @@ use App\Enums\DownloadMode;
 use App\Enums\DiscoveredVia;
 use App\Enums\EnclosureMode;
 use App\Enums\MediaItemStatus;
+use App\Enums\MediaServerLibraryType;
+use App\Enums\MediaServerType;
 use App\Enums\SourceType;
 use App\Models\Feed;
 use App\Models\MediaItem;
+use App\Models\MediaServer;
+use App\Models\MediaServerLibrary;
 use App\Models\Source;
 use App\Services\Core\ModelId;
 use Ytdlphp\Metadata\VideoInfo;
@@ -66,7 +70,7 @@ final class Fixtures
     /** @param array<string, mixed> $overrides */
     public static function source(array $overrides = []): Source
     {
-        return Source::create(
+        $source = Source::create(
             url: (string) ($overrides['url'] ?? 'https://www.youtube.com/@CriticalRole'),
             type: $overrides['type'] ?? SourceType::Channel,
             title: $overrides['title'] ?? 'Critical Role',
@@ -79,6 +83,21 @@ final class Fixtures
             filtersJson: $overrides['filtersJson'] ?? null,
             enabled: $overrides['enabled'] ?? true,
         );
+
+        $dirty = false;
+
+        foreach (['notifyMediaServer', 'mediaServerLibraryId', 'metadataMode', 'tmdbSeriesId', 'tvdbSeriesId', 'outputTemplate'] as $field) {
+            if (array_key_exists($field, $overrides)) {
+                $source->{$field} = $overrides[$field];
+                $dirty = true;
+            }
+        }
+
+        if ($dirty) {
+            $source->save();
+        }
+
+        return $source;
     }
 
     /** @param array<string, mixed> $overrides */
@@ -97,6 +116,47 @@ final class Fixtures
     }
 
     /** @param array<string, mixed> $overrides */
+    public static function mediaServer(array $overrides = []): MediaServer
+    {
+        return MediaServer::create(
+            name: (string) ($overrides['name'] ?? 'Test Plex'),
+            type: $overrides['type'] ?? MediaServerType::Plex,
+            baseUrl: (string) ($overrides['baseUrl'] ?? 'http://plex.test:32400'),
+            apiToken: (string) ($overrides['apiToken'] ?? 'test-token'),
+            tubecastVideoRoot: (string) ($overrides['tubecastVideoRoot'] ?? '/tmp/tubecast-test/video'),
+            tubecastAudioRoot: (string) ($overrides['tubecastAudioRoot'] ?? '/tmp/tubecast-test/audio'),
+            enabled: $overrides['enabled'] ?? true,
+        );
+    }
+
+    /** @param array<string, mixed> $overrides */
+    public static function mediaServerLibrary(MediaServer $server, array $overrides = []): MediaServerLibrary
+    {
+        return MediaServerLibrary::create(
+            mediaServerId: ModelId::int($server->id),
+            externalId: (string) ($overrides['externalId'] ?? '1'),
+            name: (string) ($overrides['name'] ?? 'TV Shows'),
+            libraryType: $overrides['libraryType'] ?? MediaServerLibraryType::Tv,
+            remoteRoot: $overrides['remoteRoot'] ?? '/mnt/nas/youtube',
+            enabled: $overrides['enabled'] ?? true,
+        );
+    }
+
+    /** @param array<string, mixed> $sourceOverrides */
+    /** @param array<string, mixed> $libraryOverrides */
+    public static function sourceWithMediaServerLibrary(array $sourceOverrides = [], array $libraryOverrides = []): array
+    {
+        $server = self::mediaServer();
+        $library = self::mediaServerLibrary($server, $libraryOverrides);
+        $source = self::source(array_merge($sourceOverrides, [
+            'notifyMediaServer' => true,
+            'mediaServerLibraryId' => ModelId::int($library->id),
+        ]));
+
+        return ['server' => $server, 'library' => $library, 'source' => $source];
+    }
+
+    /** @param array<string, mixed> $overrides */
     public static function mediaItem(Source $source, array $overrides = []): MediaItem
     {
         $metadata = $overrides['metadataJson'] ?? json_encode([
@@ -107,7 +167,7 @@ final class Fixtures
             'live_status' => 'not_live',
         ], JSON_THROW_ON_ERROR);
 
-        return MediaItem::create(
+        $item = MediaItem::create(
             sourceId: ModelId::int($source->id),
             ytId: (string) ($overrides['ytId'] ?? 'abc123'),
             title: (string) ($overrides['title'] ?? 'Campaign Episode'),
@@ -116,6 +176,36 @@ final class Fixtures
             discoveredVia: $overrides['discoveredVia'] ?? DiscoveredVia::Rss,
             metadataJson: is_string($metadata) ? $metadata : null,
         );
+
+        if (array_key_exists('description', $overrides)) {
+            $item->description = $overrides['description'];
+        }
+
+        if (array_key_exists('publishedAt', $overrides)) {
+            $item->publishedAt = $overrides['publishedAt'];
+        }
+
+        if (array_key_exists('filePath', $overrides)) {
+            $item->filePath = $overrides['filePath'];
+        }
+
+        if (array_key_exists('podcastFilePath', $overrides)) {
+            $item->podcastFilePath = $overrides['podcastFilePath'];
+        }
+
+        if (array_key_exists('seasonEpisode', $overrides)) {
+            $item->seasonEpisode = $overrides['seasonEpisode'];
+        }
+
+        if ($item->description !== null
+            || $item->publishedAt !== null
+            || $item->filePath !== null
+            || $item->podcastFilePath !== null
+            || $item->seasonEpisode !== null) {
+            $item->save();
+        }
+
+        return $item;
     }
 
     /** @param array<string, mixed> $overrides */

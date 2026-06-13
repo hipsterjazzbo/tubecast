@@ -30,6 +30,10 @@ use App\Services\Core\ModelId;
 use App\Services\Source\SourceContentTypes;
 use App\Services\Source\SourceEpisodeQuery;
 use App\Services\Source\SourceFilters;
+use App\Events\SourceSettingsUpdated;
+use App\Repositories\SettingsRepository;
+use App\Services\MediaServer\MediaServerLibraryQuery;
+use Tempest\EventBus\EventBus;
 use Tempest\CommandBus\CommandBus;
 use Tempest\Http\Responses\Redirect;
 use Tempest\Database\Direction;
@@ -57,6 +61,9 @@ final readonly class SourceController
         private SourceMetadataService $metadata,
         private SourceDeletionService $deletion,
         private SourceIndexingTriggers $indexingTriggers,
+        private EventBus $eventBus,
+        private MediaServerLibraryQuery $mediaServerLibraries,
+        private SettingsRepository $settings,
     ) {
     }
 
@@ -98,21 +105,23 @@ final readonly class SourceController
     #[Get('/sources/create')]
     public function create(): View
     {
-        return view('views/sources/create.view.php', ...[
+        $source = $this->blankSource();
+
+        return view('views/sources/create.view.php', ...array_merge([
             'profiles' => MediaProfile::select()->all(),
-            'source' => $this->blankSource(),
+            'source' => $source,
             'sourceFilters' => new SourceFilters(),
-        ]);
+        ], $this->mediaServerFormContext($source)));
     }
 
     #[Get('/sources/{source}/edit')]
     public function edit(Source $source): View
     {
-        return view('views/sources/edit.view.php', ...[
+        return view('views/sources/edit.view.php', ...array_merge([
             'source' => $source,
             'profiles' => MediaProfile::select()->all(),
             'sourceFilters' => SourceFilters::fromSource($source),
-        ]);
+        ], $this->mediaServerFormContext($source)));
     }
 
     #[Get('/sources/{source}')]
@@ -255,6 +264,8 @@ final readonly class SourceController
         $previousIncludeLive = $source->includeLive;
         $previousSaveVideo = $source->saveVideo;
         $previousSaveAudio = $source->saveAudio;
+        $previousNotifyMediaServer = $source->notifyMediaServer;
+        $previousMediaServerLibraryId = $source->mediaServerLibraryId;
         $previousFilters = SourceFilters::fromSource($source);
 
         $title = $request->trimmedTitle();
@@ -272,21 +283,24 @@ final readonly class SourceController
         $source->filtersJson = $encoded !== '' ? $encoded : null;
 
         $source->mediaProfileId = $request->parsedMediaProfileId();
+        $request->applyMediaServerSettings($source);
         $source->save();
 
         $newFilters = SourceFilters::fromSource($source);
 
-        foreach ($this->indexingTriggers->commandsAfterSettingsChange(
-            $source,
-            $previousIncludeShorts,
-            $previousIncludeLive,
-            $previousSaveVideo,
-            $previousSaveAudio,
-            $previousFilters,
-            $newFilters,
-        ) as $command) {
-            $this->commandBus->dispatch($command);
-        }
+        $this->eventBus->dispatch(new SourceSettingsUpdated(
+            sourceId: $sourceId,
+            previousIncludeShorts: $previousIncludeShorts,
+            previousIncludeLive: $previousIncludeLive,
+            previousSaveVideo: $previousSaveVideo,
+            previousSaveAudio: $previousSaveAudio,
+            previousFilters: $previousFilters,
+            newFilters: $newFilters,
+            previousNotifyMediaServer: $previousNotifyMediaServer,
+            newNotifyMediaServer: $source->notifyMediaServer,
+            previousMediaServerLibraryId: $previousMediaServerLibraryId,
+            newMediaServerLibraryId: $source->mediaServerLibraryId,
+        ));
 
         return new Redirect('/sources/' . $sourceId);
     }
@@ -442,6 +456,18 @@ final readonly class SourceController
         }
 
         return implode(' · ', $parts);
+    }
+
+
+    /** @return array<string, mixed> */
+    private function mediaServerFormContext(Source $source): array
+    {
+        return [
+            "libraryGroups" => $this->mediaServerLibraries->enabledLibrariesGroupedByServer(),
+            "hasMediaServerLibraries" => $this->mediaServerLibraries->hasAnyEnabledLibraries(),
+            "tmdbConfigured" => ($this->settings->get("tmdbApiKey") ?? "") !== "",
+            "tvdbConfigured" => ($this->settings->get("tvdbApiKey") ?? "") !== "",
+        ];
     }
 
     private function blankSource(): Source

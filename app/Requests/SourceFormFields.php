@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Requests;
 
 use App\Enums\DownloadMode;
+use App\Enums\MetadataMode;
+use App\Models\Source;
 use App\Services\Source\SourceFilters;
 use Tempest\Validation\Rules;
 use Tempest\Validation\SkipValidation;
@@ -36,6 +38,20 @@ trait SourceFormFields
     #[SkipValidation]
     public mixed $mediaProfileId = null;
 
+    public bool $notifyMediaServer = false;
+
+    #[SkipValidation]
+    public mixed $mediaServerLibraryId = null;
+
+    #[Rules\IsEnum(MetadataMode::class)]
+    public MetadataMode $metadataMode = MetadataMode::Local;
+
+    #[SkipValidation]
+    public mixed $tmdbSeriesId = null;
+
+    #[SkipValidation]
+    public mixed $tvdbSeriesId = null;
+
     public function toSourceFilters(): SourceFilters
     {
         return SourceFilters::fromForm([
@@ -55,10 +71,46 @@ trait SourceFormFields
         return (int) $this->mediaProfileId;
     }
 
+    public function parsedMediaServerLibraryId(): ?int
+    {
+        if ($this->mediaServerLibraryId === null || $this->mediaServerLibraryId === '') {
+            return null;
+        }
+
+        return (int) $this->mediaServerLibraryId;
+    }
+
+    public function parsedTmdbSeriesId(): ?int
+    {
+        if ($this->tmdbSeriesId === null || $this->tmdbSeriesId === '') {
+            return null;
+        }
+
+        return (int) $this->tmdbSeriesId;
+    }
+
+    public function parsedTvdbSeriesId(): ?int
+    {
+        if ($this->tvdbSeriesId === null || $this->tvdbSeriesId === '') {
+            return null;
+        }
+
+        return (int) $this->tvdbSeriesId;
+    }
+
     public function trimmedTitle(): ?string
     {
         $title = trim($this->title);
 
         return $title !== '' ? $title : null;
+    }
+
+    public function applyMediaServerSettings(Source $source): void
+    {
+        $source->notifyMediaServer = $this->notifyMediaServer && $this->parsedMediaServerLibraryId() !== null;
+        $source->mediaServerLibraryId = $this->parsedMediaServerLibraryId();
+        $source->metadataMode = $this->metadataMode;
+        $source->tmdbSeriesId = $this->metadataMode === MetadataMode::Tmdb ? $this->parsedTmdbSeriesId() : null;
+        $source->tvdbSeriesId = $this->metadataMode === MetadataMode::Tvdb ? $this->parsedTvdbSeriesId() : null;
     }
 }

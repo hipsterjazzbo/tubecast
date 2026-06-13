@@ -10,6 +10,7 @@ use App\Models\MediaItem;
 use App\Models\MediaProfile;
 use App\Models\Source;
 use App\Services\Core\ModelId;
+use App\Services\MediaServer\MediaItemCompletionService;
 use App\Services\Podcast\PodcastVariantService;
 use Tempest\CommandBus\CommandBus;
 use Tempest\Log\Logger;
@@ -20,6 +21,7 @@ final class DownloadRecoveryService
         private OutputPathBuilder $paths,
         private PodcastVariantService $podcast,
         private CommandBus $commandBus,
+        private MediaItemCompletionService $completion,
         private Logger $logger,
     ) {
     }
@@ -114,10 +116,7 @@ final class DownloadRecoveryService
             return false;
         }
 
-        $item->status = MediaItemStatus::Completed;
-        $item->save();
-
-        return true;
+        return $this->completion->markCompleted($source, $item);
     }
 
     public function prepareInterruptedDownload(Source $source, MediaItem $item, ?MediaProfile $profile): bool

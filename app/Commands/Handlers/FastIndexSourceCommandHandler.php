@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands\Handlers;
 
-use App\Commands\DownloadMediaCommand;
 use App\Commands\FastIndexSourceCommand;
 use App\Enums\DiscoveredVia;
 use App\Enums\MediaItemStatus;
+use App\Events\MediaItemIndexed;
 use App\Models\MediaItem;
 use App\Models\Source;
 use App\Services\Core\ModelId;
@@ -15,9 +15,9 @@ use App\Services\Source\EpisodeFilterService;
 use App\Services\Source\SourceMetadataService;
 use App\Services\YouTube\YouTubeRssService;
 use Psr\Log\LoggerInterface;
-use Tempest\CommandBus\CommandBus;
 use Tempest\CommandBus\CommandHandler;
 use Tempest\DateTime\DateTime;
+use Tempest\EventBus\EventBus;
 
 final readonly class FastIndexSourceCommandHandler
 {
@@ -25,7 +25,7 @@ final readonly class FastIndexSourceCommandHandler
         private YouTubeRssService $rss,
         private SourceMetadataService $metadata,
         private EpisodeFilterService $episodeFilter,
-        private CommandBus $commandBus,
+        private EventBus $eventBus,
         private LoggerInterface $logger,
     ) {
     }
@@ -74,9 +74,11 @@ final readonly class FastIndexSourceCommandHandler
                 discoveredVia: DiscoveredVia::Rss,
             );
 
-            if ($this->episodeFilter->shouldAutoDownload($source)) {
-                $this->commandBus->dispatch(new DownloadMediaCommand(ModelId::int($item->id)));
-            }
+            $this->eventBus->dispatch(new MediaItemIndexed(
+                mediaItemId: ModelId::int($item->id),
+                sourceId: ModelId::int($source->id),
+                newlyCreated: true,
+            ));
         }
 
         $source->lastFastIndexedAt = DateTime::now();

@@ -27,4 +27,5 @@ final class MediaItem implements Bindable
     public ?int $podcastFileSize = null;
     public ?string $podcastMime = null;
     public ?string $metadataJson = null;
+    public ?int $seasonEpisode = null;
 }

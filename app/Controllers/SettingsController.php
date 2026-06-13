@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Config\TubecastConfig;
+use App\Models\MediaServer;
+use App\Models\MediaServerLibrary;
+use App\Services\Core\ModelId;
 use App\Services\Download\DownloadCleanupService;
 use App\Repositories\SettingsRepository;
 use App\Requests\UpdateYouTubeApiSettingsRequest;
@@ -27,6 +31,7 @@ final readonly class SettingsController
     public function __construct(
         private SettingsRepository $settings,
         private DownloadCleanupService $downloadCleanup,
+        private TubecastConfig $config,
     ) {
     }
 
@@ -47,6 +52,11 @@ final readonly class SettingsController
                 || (is_string(env('YOUTUBE_API_KEY')) && env('YOUTUBE_API_KEY') !== ''),
             'devToolsEnabled' => DevTools::enabled(),
             'nukeResult' => $this->nukeResultFromRequest($request),
+            'mediaServers' => $this->mediaServerRows(),
+            'defaultVideoRoot' => $this->config->videoPath,
+            'defaultAudioRoot' => $this->config->audioPath,
+            'tmdbApiKey' => $this->settings->get('tmdbApiKey', ''),
+            'tvdbApiKey' => $this->settings->get('tvdbApiKey', ''),
         ]);
     }
 
@@ -77,6 +87,26 @@ final readonly class SettingsController
         $result = $this->downloadCleanup->nukeAll();
 
         return new Redirect('/settings?nuke=1&files=' . $result['deletedFiles'] . '&items=' . $result['resetItems']);
+    }
+
+
+    /** @return list<object> */
+    private function mediaServerRows(): array
+    {
+        $rows = [];
+
+        foreach (MediaServer::select()->orderBy("id")->all() as $server) {
+            $libraryCount = MediaServerLibrary::count()
+                ->where("mediaServerId = ? AND enabled = 1", ModelId::int($server->id))
+                ->execute();
+
+            $rows[] = (object) [
+                "server" => $server,
+                "libraryCount" => $libraryCount,
+            ];
+        }
+
+        return $rows;
     }
 
     /** @return array{files: int, items: int}|null */

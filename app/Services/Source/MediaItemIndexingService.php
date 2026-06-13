@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services\Source;
 
-use App\Commands\DownloadMediaCommand;
 use App\Enums\DiscoveredVia;
 use App\Enums\MediaItemStatus;
+use App\Events\MediaItemIndexed;
 use App\Models\MediaItem;
 use App\Models\Source;
 use App\Services\Core\ModelId;
-use Tempest\CommandBus\CommandBus;
 use Tempest\DateTime\DateTime;
+use Tempest\EventBus\EventBus;
 use Ytdlphp\Metadata\VideoInfo;
 
 final class MediaItemIndexingService
 {
     public function __construct(
         private EpisodeFilterService $episodeFilter,
-        private CommandBus $commandBus,
+        private EventBus $eventBus,
     ) {
     }
 
@@ -52,8 +52,12 @@ final class MediaItemIndexingService
         $this->enrichItem($item, $video);
         $item->save();
 
-        if ($matchesFilter && $this->episodeFilter->shouldAutoDownload($source)) {
-            $this->commandBus->dispatch(new DownloadMediaCommand(ModelId::int($item->id)));
+        if ($matchesFilter) {
+            $this->eventBus->dispatch(new MediaItemIndexed(
+                mediaItemId: ModelId::int($item->id),
+                sourceId: ModelId::int($source->id),
+                newlyCreated: true,
+            ));
         }
     }
 
