@@ -20,7 +20,9 @@
             <h2 class="text-sm font-medium text-slate-300 uppercase tracking-wide">yt-dlp overrides</h2>
             <label class="block">
                 <span class="text-sm text-slate-300">Cookies file</span>
-                <input name="ytDlpCookiesFile" value="{{ $cookiesFile }}" class="mt-1.5 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm" placeholder="/data/config/cookies.txt">
+                <input name="ytDlpCookiesFile" value="{{ $cookiesFile }}"
+                       class="mt-1.5 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm"
+                       placeholder="/config/cookies.txt">
             </label>
             <label class="block">
                 <span class="text-sm text-slate-300">Proxy</span>

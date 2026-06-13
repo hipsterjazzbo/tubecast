@@ -5,7 +5,8 @@ services:
       args:
         COMPOSER_DEV: "1"
     volumes:
-      - tubecast-data:/data
+      - ${TUBECAST_CONFIG_DIR:-tubecast-config}:/config
+      - ${TUBECAST_MEDIA_DIR:-tubecast-media}:/media
       - ./app:/var/www/html/app:Z
       - ./tests:/var/www/html/tests:Z
       - ./phpunit.xml:/var/www/html/phpunit.xml:Z

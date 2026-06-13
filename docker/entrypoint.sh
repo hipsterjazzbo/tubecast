@@ -2,7 +2,7 @@
 set -e
 
 APP_DIR="${APP_BASE_DIR:-/var/www/html}"
-ENV_TARGET="/data/config/.env"
+ENV_TARGET="/config/.env"
 PUID="${PUID:-33}"
 PGID="${PGID:-33}"
 
@@ -50,12 +50,12 @@ tubecast_bootstrap() {
         export ADMIN_USERNAME
     fi
 
-    mkdir -p /data/downloads /data/podcast /data/config /data/stored-commands
+    mkdir -p /config/stored-commands /media/downloads /media/podcast
     mkdir -p "${APP_DIR}/.tempest/logs" "${APP_DIR}/.tempest/cache" "${APP_DIR}/.tempest/sessions" \
         "${APP_DIR}/.tempest/scheduler"
 
-    if [ ! -f "${DB_DATABASE:-/data/database.sqlite}" ]; then
-        touch "${DB_DATABASE:-/data/database.sqlite}"
+    if [ ! -f "${DB_DATABASE:-/config/database.sqlite}" ]; then
+        touch "${DB_DATABASE:-/config/database.sqlite}"
     fi
 
     existing_signing=""
@@ -71,10 +71,10 @@ INTERNAL_CACHES=${INTERNAL_CACHES:-true}
 DISCOVERY_CACHE=${DISCOVERY_CACHE:-partial}
 DEBUG_LOG_PATH=${DEBUG_LOG_PATH:-null}
 SERVER_LOG_PATH=${SERVER_LOG_PATH:-null}
-DB_DATABASE=${DB_DATABASE:-/data/database.sqlite}
-DATA_PATH=${DATA_PATH:-/data}
-DOWNLOADS_PATH=${DOWNLOADS_PATH:-/data/downloads}
-PODCAST_PATH=${PODCAST_PATH:-/data/podcast}
+DB_DATABASE=${DB_DATABASE:-/config/database.sqlite}
+DATA_PATH=${DATA_PATH:-/config}
+DOWNLOADS_PATH=${DOWNLOADS_PATH:-/media/downloads}
+PODCAST_PATH=${PODCAST_PATH:-/media/podcast}
 YT_DLP_BINARY=${YT_DLP_BINARY:-yt-dlp}
 YT_DLP_WORKER_CONCURRENCY=${YT_DLP_WORKER_CONCURRENCY:-1}
 YT_DLP_SLEEP_INTERVAL=${YT_DLP_SLEEP_INTERVAL:-5}
@@ -88,7 +88,7 @@ EOF
     ln -sf "${ENV_TARGET}" "${APP_DIR}/.env"
 
     if [ "$(id -u)" -eq 0 ]; then
-        chown -R www-data:www-data /data "${APP_DIR}/.tempest" 2>/dev/null || true
+        chown -R www-data:www-data /config /media "${APP_DIR}/.tempest" 2>/dev/null || true
     fi
 
     if ! grep -qE '^SIGNING_KEY=.+' "${ENV_TARGET}" 2>/dev/null; then

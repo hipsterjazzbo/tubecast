@@ -36,20 +36,34 @@ Open **http://localhost:8742** and sign in with the default credentials:
 
 Change the password before exposing TubeCast to a network — copy `.env.docker.example` to `.env.docker`, set `TUBECAST_ADMIN_PASSWORD`, and run `docker compose --env-file .env.docker up -d`.
 
-On first start the container creates a data volume, runs database migrations, and seeds default download profiles. SQLite, downloaded media, and podcast files all live in the `tubecast-data` Docker volume.
+On first start the container creates two data volumes, runs database migrations, and seeds default download profiles:
+
+| Volume            | Container path | Contents                                     |
+|-------------------|----------------|----------------------------------------------|
+| `tubecast-config` | `/config`      | SQLite database, app `.env`, stored commands |
+| `tubecast-media`  | `/media`       | Downloaded videos and podcast audio          |
+
+To store config and media on separate host directories (e.g. different NAS pools), set `TUBECAST_CONFIG_DIR` and
+`TUBECAST_MEDIA_DIR` in `.env.docker` — see `.env.docker.example`.
+
+**Upgrading from a single `tubecast-data` volume:** stop the container, then copy into your config mount (`/config`):
+`database.sqlite`, `stored-commands/`, and rename `config/.env` → `.env`. Copy `downloads/` and `podcast/` into your
+media mount (`/media`). Start with the updated compose file and remove the old `tubecast-data` volume once verified.
 
 ### Configuration
 
 `docker-compose.yml` ships with sane defaults — no env file required. Optional overrides use `.env.docker` (see `.env.docker.example`); variables are prefixed with `TUBECAST_` so they do not conflict with a developer's lerd `.env` in the same clone.
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `TUBECAST_PORT` | `8742` | Host port for the web UI |
-| `TUBECAST_ADMIN_USERNAME` | `admin` | Admin login username |
-| `TUBECAST_ADMIN_PASSWORD` | `changeme` | Admin login password |
-| `TUBECAST_BASE_URI` | `http://localhost:8742` | Public URL for RSS enclosures and media links |
-| `TUBECAST_PUID` / `TUBECAST_PGID` | `33` | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
-| `TUBECAST_YOUTUBE_API_KEY` | _(empty)_ | Optional YouTube Data API key |
+| Variable                          | Default                            | Purpose                                                                        |
+|-----------------------------------|------------------------------------|--------------------------------------------------------------------------------|
+| `TUBECAST_PORT`                   | `8742`                             | Host port for the web UI                                                       |
+| `TUBECAST_ADMIN_USERNAME`         | `admin`                            | Admin login username                                                           |
+| `TUBECAST_ADMIN_PASSWORD`         | `changeme`                         | Admin login password                                                           |
+| `TUBECAST_BASE_URI`               | `http://localhost:8742`            | Public URL for RSS enclosures and media links                                  |
+| `TUBECAST_PUID` / `TUBECAST_PGID` | `33`                               | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
+| `TUBECAST_YOUTUBE_API_KEY`        | _(empty)_                          | Optional YouTube Data API key                                                  |
+| `TUBECAST_CONFIG_DIR`             | _(named volume `tubecast-config`)_ | Host path for config (database, `.env`, stored commands)                       |
+| `TUBECAST_MEDIA_DIR`              | _(named volume `tubecast-media`)_  | Host path for downloads and podcast files                                      |
 
 Cookies and proxy can also be set in the **Settings** UI (stored in the database).
 
@@ -130,7 +144,7 @@ make dev            # dev mode: bind-mounts app code for live reload
 make logs              # follow container logs
 make shell             # shell into the container
 make migrate           # run pending migrations
-make reset && make dev # wipe data volume and start fresh
+make reset && make dev # wipe named volumes and start fresh
 make test              # run tests inside the dev container
 make assets            # rebuild frontend assets on the host
 ```
@@ -202,7 +216,8 @@ TubeCast runs background workers (command monitor + scheduler) inside the contai
 - **Auto mode** — downloads start automatically after indexing
 - **Manual mode** — click **Download** on individual episodes or **Download all matching**
 
-Video files land in `DOWNLOADS_PATH` (default `/data/downloads`). Podcast audio lands in `PODCAST_PATH/{source-id}/`. Interrupted downloads are recovered on restart.
+Video files land in `DOWNLOADS_PATH` (default `/media/downloads`). Podcast audio lands in `PODCAST_PATH/{source-id}/`.
+Interrupted downloads are recovered on restart.
 
 ## Project structure
 
