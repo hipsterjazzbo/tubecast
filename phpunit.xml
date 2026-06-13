@@ -41,8 +41,8 @@
         <env name="YT_DLP_SLEEP_INTERVAL" value="0"/>
         <env name="YT_DLP_SLEEP_REQUESTS" value="0"/>
         <env name="DATA_PATH" value="/tmp/tubecast-test"/>
-        <env name="DOWNLOADS_PATH" value="/tmp/tubecast-test/downloads"/>
-        <env name="PODCAST_PATH" value="/tmp/tubecast-test/podcast"/>
+        <env name="VIDEO_PATH" value="/tmp/tubecast-test/video"/>
+        <env name="AUDIO_PATH" value="/tmp/tubecast-test/audio"/>
         <env name="ADMIN_USERNAME" value="testadmin"/>
         <env name="ADMIN_PASSWORD" value="test-admin-password"/>
     </php>

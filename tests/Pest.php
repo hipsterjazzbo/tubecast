@@ -15,7 +15,7 @@ pest()->extend(IntegrationTestCase::class)
         $dataPath = getenv('DATA_PATH') ?: dirname(__DIR__) . '/data';
         $storedCommands = rtrim($dataPath, '/') . '/stored-commands';
 
-        foreach ([$storedCommands, '/tmp/tubecast-test/downloads', '/tmp/tubecast-test/podcast'] as $directory) {
+        foreach ([$storedCommands, '/tmp/tubecast-test/video', '/tmp/tubecast-test/audio'] as $directory) {
             if (! is_dir($directory)) {
                 mkdir($directory, 0755, true);
             }
@@ -36,7 +36,7 @@ pest()->extend(IntegrationTestCase::class)
         $dataPath = getenv('DATA_PATH') ?: dirname(__DIR__) . '/data';
         $storedCommands = rtrim($dataPath, '/') . '/stored-commands';
 
-        foreach ([$storedCommands, '/tmp/tubecast-test/downloads', '/tmp/tubecast-test/podcast'] as $directory) {
+        foreach ([$storedCommands, '/tmp/tubecast-test/video', '/tmp/tubecast-test/audio'] as $directory) {
             if (! is_dir($directory)) {
                 mkdir($directory, 0755, true);
             }

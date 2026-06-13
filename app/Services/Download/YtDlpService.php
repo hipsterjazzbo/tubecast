@@ -27,7 +27,7 @@ final class YtDlpService
         private SettingsRepository $settings,
     ) {
         $this->client = new YtDlp($this->config->ytDlpBinary)
-            ->withWorkingDirectory($this->config->downloadsPath)
+            ->withWorkingDirectory($this->config->videoPath)
             ->withDefaultOptions($this->defaultOptions());
     }
 
@@ -103,7 +103,7 @@ final class YtDlpService
     private function audioDownloadOptions(Source $source, ?MediaProfile $profile): Options
     {
         $options = $this->defaultOptions()
-            ->output($this->paths->podcastOutputTemplate(ModelId::int($source->id)))
+            ->output($this->paths->audioOutputTemplate(ModelId::int($source->id)))
             ->extractAudio()
             ->format($profile?->formatSelector ?? 'bestaudio/best')
             ->audioFormat($profile?->mergeFormat ?? 'm4a');
@@ -171,7 +171,7 @@ final class YtDlpService
 
         $process = new Process(
             command: [$this->config->ytDlpBinary, ...$options->toArray(), $url],
-            cwd: $this->config->downloadsPath,
+            cwd: $this->config->videoPath,
             timeout: null,
         );
 

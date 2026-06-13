@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
+use App\Config\TubecastConfig;
 use App\Enums\MediaItemStatus;
 use App\Services\Core\ModelId;
-use App\Config\TubecastConfig;
 use Tests\Support\Fixtures;
 
 describe('Media serving', function (): void {
-    it('serves completed podcast audio via tokenized URL', function (): void {
+    it('serves completed audio via tokenized URL', function (): void {
         $config = $this->container->get(TubecastConfig::class);
         $source = Fixtures::source(['saveVideo' => false, 'saveAudio' => true]);
         $sourceId = ModelId::int($source->id);
-        $podcast = rtrim($config->podcastPath, '/') . '/' . $sourceId;
-        is_dir($podcast) || mkdir($podcast, 0755, true);
+        $audio = rtrim($config->audioPath, '/') . '/' . $sourceId;
+        is_dir($audio) || mkdir($audio, 0755, true);
 
         $ytId = 'Qsi1kju8Exo';
-        $file = $podcast . '/' . $ytId . '.m4a';
+        $file = $audio . '/' . $ytId . '.m4a';
         file_put_contents($file, str_repeat('a', 4096));
 
         Fixtures::feed($source, ['token' => 'secret-token']);
@@ -33,7 +33,7 @@ describe('Media serving', function (): void {
 
         $this->http->get('/media/secret-token/' . $ytId . '/audio.m4a')
             ->assertOk()
-            ->assertHeaderContains('X-Accel-Redirect', 'podcast/' . $sourceId . '/' . $ytId . '.m4a');
+            ->assertHeaderContains('X-Accel-Redirect', 'audio/' . $sourceId . '/' . $ytId . '.m4a');
 
         unlink($file);
     });
@@ -42,11 +42,11 @@ describe('Media serving', function (): void {
         $config = $this->container->get(TubecastConfig::class);
         $source = Fixtures::source(['saveVideo' => false, 'saveAudio' => true]);
         $sourceId = ModelId::int($source->id);
-        $podcast = rtrim($config->podcastPath, '/') . '/' . $sourceId;
-        is_dir($podcast) || mkdir($podcast, 0755, true);
+        $audio = rtrim($config->audioPath, '/') . '/' . $sourceId;
+        is_dir($audio) || mkdir($audio, 0755, true);
 
         $ytId = 'rss123';
-        $file = $podcast . '/' . $ytId . '.m4a';
+        $file = $audio . '/' . $ytId . '.m4a';
         file_put_contents($file, str_repeat('c', 1024));
 
         $feed = Fixtures::feed($source, ['token' => 'rss-feed-token']);

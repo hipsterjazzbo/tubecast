@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Config\TubecastConfig;
 use App\Enums\MediaItemStatus;
 use App\Services\Download\DownloadRecoveryService;
 use App\Services\Download\OutputPathBuilder;
-use App\Config\TubecastConfig;
+use App\Services\Podcast\PodcastVariantService;
+use Tempest\CommandBus\CommandBus;
+use Tempest\Log\Logger;
 use Tests\Support\Fixtures;
 
 describe('Download recovery', function (): void {
     it('finalizes interrupted audio downloads from files on disk', function (): void {
         $root = sys_get_temp_dir() . '/tubecast-recover-' . uniqid('', true);
-        $podcast = $root . '/podcast/1';
+        $podcast = $root . '/audio/1';
         mkdir($podcast, 0755, true);
 
         $ytId = 'abc123';
@@ -19,8 +22,8 @@ describe('Download recovery', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: 'yt-dlp',
             workerConcurrency: 1,
             sleepInterval: 0,
@@ -30,9 +33,9 @@ describe('Download recovery', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
-            $this->container->get(\Tempest\CommandBus\CommandBus::class),
-            $this->container->get(\Tempest\Log\Logger::class),
+            $this->container->get(PodcastVariantService::class),
+            $this->container->get(CommandBus::class),
+            $this->container->get(Logger::class),
         );
 
         $source = Fixtures::source(['saveVideo' => false, 'saveAudio' => true]);
@@ -47,7 +50,7 @@ describe('Download recovery', function (): void {
 
         array_map('unlink', glob($podcast . '/*') ?: []);
         rmdir($podcast);
-        rmdir($root . '/podcast');
+        rmdir($root . '/audio');
         rmdir($root);
     });
 

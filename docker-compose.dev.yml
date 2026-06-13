@@ -6,7 +6,8 @@ services:
         COMPOSER_DEV: "1"
     volumes:
       - ${TUBECAST_CONFIG_DIR:-tubecast-config}:/config
-      - ${TUBECAST_MEDIA_DIR:-tubecast-media}:/media
+      - ${TUBECAST_VIDEO_DIR:-tubecast-video}:/media/video
+      - ${TUBECAST_AUDIO_DIR:-tubecast-audio}:/media/audio
       - ./app:/var/www/html/app:Z
       - ./tests:/var/www/html/tests:Z
       - ./phpunit.xml:/var/www/html/phpunit.xml:Z

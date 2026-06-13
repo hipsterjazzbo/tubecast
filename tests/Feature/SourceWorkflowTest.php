@@ -5,21 +5,37 @@ declare(strict_types=1);
 use App\Commands\DownloadMediaCommand;
 use App\Commands\FastIndexSourceCommand;
 use App\Commands\FullIndexSourceCommand;
+use App\Commands\Handlers\FastIndexSourceCommandHandler;
+use App\Commands\Handlers\FullIndexSourceCommandHandler;
+use App\Config\TubecastConfig;
 use App\Enums\DiscoveredVia;
 use App\Enums\MediaItemStatus;
 use App\Models\Feed;
 use App\Models\GlobalSetting;
 use App\Models\MediaItem;
 use App\Models\Source;
+use App\Repositories\SettingsRepository;
+use App\Services\Core\ModelId;
+use App\Services\Core\ThrottleGuard;
 use App\Services\Download\DownloadRecoveryService;
 use App\Services\Download\OutputPathBuilder;
+use App\Services\Download\YtDlpService;
+use App\Services\Podcast\PodcastVariantService;
+use App\Services\Source\EpisodeFilterService;
+use App\Services\Source\MediaItemIndexingService;
+use App\Services\Source\SourceMetadataService;
+use App\Services\YouTube\YouTubeChannelPageScraper;
 use App\Services\YouTube\YouTubeDataApiService;
-use App\Services\Core\ModelId;
-use App\Config\TubecastConfig;
+use App\Services\YouTube\YouTubeRssService;
+use App\Services\YouTube\YouTubeRssUrlBuilder;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
+use Tempest\CommandBus\CommandBus;
+use Tempest\CommandBus\CommandRepository;
+use Tempest\Log\Logger;
 use Tests\Support\Fixtures;
 
 describe('Critical Role video workflow', function (): void {
@@ -41,7 +57,7 @@ describe('Critical Role video workflow', function (): void {
         $feed = Feed::select()->where('sourceId = ?', ModelId::int($source->id))->first();
         expect($feed)->not->toBeNull();
 
-        $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
+        $pending = $this->container->get(CommandRepository::class)->getPendingCommands();
         $sourceId = ModelId::int($source->id);
 
         expect(array_filter(
@@ -96,20 +112,20 @@ describe('Critical Role video workflow', function (): void {
         ]);
 
         $api = new YouTubeDataApiService(
-            $this->container->get(\App\Repositories\SettingsRepository::class),
-            $this->container->get(\App\Services\YouTube\YouTubeRssUrlBuilder::class),
-            $this->container->get(\App\Services\YouTube\YouTubeChannelPageScraper::class),
+            $this->container->get(SettingsRepository::class),
+            $this->container->get(YouTubeRssUrlBuilder::class),
+            $this->container->get(YouTubeChannelPageScraper::class),
             new Client(['handler' => HandlerStack::create($mock)]),
         );
 
-        $handler = new \App\Commands\Handlers\FullIndexSourceCommandHandler(
-            $this->container->get(\App\Services\Download\YtDlpService::class),
-            $this->container->get(\App\Services\Core\ThrottleGuard::class),
-            $this->container->get(\App\Services\Source\SourceMetadataService::class),
-            $this->container->get(\App\Services\Source\EpisodeFilterService::class),
-            $this->container->get(\App\Services\Source\MediaItemIndexingService::class),
+        $handler = new FullIndexSourceCommandHandler(
+            $this->container->get(YtDlpService::class),
+            $this->container->get(ThrottleGuard::class),
+            $this->container->get(SourceMetadataService::class),
+            $this->container->get(EpisodeFilterService::class),
+            $this->container->get(MediaItemIndexingService::class),
             $api,
-            $this->container->get(\Psr\Log\LoggerInterface::class),
+            $this->container->get(LoggerInterface::class),
         );
 
         $handler->__invoke(new FullIndexSourceCommand($sourceId));
@@ -130,7 +146,7 @@ describe('Critical Role video workflow', function (): void {
 
     it('finalizes a completed video download from disk', function (): void {
         $root = sys_get_temp_dir() . '/tubecast-cr-' . uniqid('', true);
-        $downloads = $root . '/downloads/Critical Role';
+        $downloads = $root . '/video/Critical Role';
         mkdir($downloads, 0755, true);
 
         $ytId = 'cr-video';
@@ -139,8 +155,8 @@ describe('Critical Role video workflow', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: 'yt-dlp',
             workerConcurrency: 1,
             sleepInterval: 0,
@@ -150,9 +166,9 @@ describe('Critical Role video workflow', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
-            $this->container->get(\Tempest\CommandBus\CommandBus::class),
-            $this->container->get(\Tempest\Log\Logger::class),
+            $this->container->get(PodcastVariantService::class),
+            $this->container->get(CommandBus::class),
+            $this->container->get(Logger::class),
         );
 
         $source = Fixtures::criticalRoleSource();
@@ -168,7 +184,7 @@ describe('Critical Role video workflow', function (): void {
 
         unlink($videoPath);
         rmdir($downloads);
-        rmdir($root . '/downloads');
+        rmdir($root . '/video');
         rmdir($root);
     });
 });
@@ -207,7 +223,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
         $sourceId = ModelId::int($source->id);
 
         $root = sys_get_temp_dir() . '/tubecast-oi-' . uniqid('', true);
-        $podcast = $root . '/podcast/' . $sourceId;
+        $podcast = $root . '/audio/' . $sourceId;
         mkdir($podcast, 0755, true);
 
         $ytId = 'oi001';
@@ -215,8 +231,8 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: 'yt-dlp',
             workerConcurrency: 1,
             sleepInterval: 0,
@@ -226,9 +242,9 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
 
         $recovery = new DownloadRecoveryService(
             new OutputPathBuilder($config),
-            $this->container->get(\App\Services\Podcast\PodcastVariantService::class),
-            $this->container->get(\Tempest\CommandBus\CommandBus::class),
-            $this->container->get(\Tempest\Log\Logger::class),
+            $this->container->get(PodcastVariantService::class),
+            $this->container->get(CommandBus::class),
+            $this->container->get(Logger::class),
         );
 
         $item = Fixtures::mediaItem($source, [
@@ -243,7 +259,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
 
         unlink($podcast . '/' . $ytId . '.m4a');
         rmdir($podcast);
-        rmdir($root . '/podcast');
+        rmdir($root . '/audio');
         rmdir($root);
     });
 
@@ -262,7 +278,7 @@ describe('Oculus Imperia audio podcast workflow', function (): void {
         $this->authedPost('/sources/' . $sourceId . '/episodes/' . $itemId . '/download')
             ->assertRedirect('/sources/' . $sourceId . '#episodes');
 
-        $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
+        $pending = $this->container->get(CommandRepository::class)->getPendingCommands();
 
         expect(array_filter(
             $pending,
@@ -279,7 +295,7 @@ describe('Source lifecycle', function (): void {
         $this->authedPost('/sources/' . $sourceId . '/index')
             ->assertRedirect('/sources/' . $sourceId);
 
-        $pending = $this->container->get(\Tempest\CommandBus\CommandRepository::class)->getPendingCommands();
+        $pending = $this->container->get(CommandRepository::class)->getPendingCommands();
 
         expect(array_filter(
             $pending,
@@ -307,16 +323,16 @@ XML;
             new Response(200, ['Content-Type' => 'application/atom+xml'], $rssXml),
         ]);
 
-        $rss = new \App\Services\YouTube\YouTubeRssService(
+        $rss = new YouTubeRssService(
             new Client(['handler' => HandlerStack::create($mock)]),
         );
 
-        $handler = new \App\Commands\Handlers\FastIndexSourceCommandHandler(
+        $handler = new FastIndexSourceCommandHandler(
             $rss,
-            $this->container->get(\App\Services\Source\SourceMetadataService::class),
-            $this->container->get(\App\Services\Source\EpisodeFilterService::class),
-            $this->container->get(\Tempest\CommandBus\CommandBus::class),
-            $this->container->get(\Psr\Log\LoggerInterface::class),
+            $this->container->get(SourceMetadataService::class),
+            $this->container->get(EpisodeFilterService::class),
+            $this->container->get(CommandBus::class),
+            $this->container->get(LoggerInterface::class),
         );
 
         $handler->__invoke(new FastIndexSourceCommand($sourceId));

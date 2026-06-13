@@ -50,7 +50,7 @@ tubecast_bootstrap() {
         export ADMIN_USERNAME
     fi
 
-    mkdir -p /config/stored-commands /media/downloads /media/podcast
+    mkdir -p /config/stored-commands /media/video /media/audio
     mkdir -p "${APP_DIR}/.tempest/logs" "${APP_DIR}/.tempest/cache" "${APP_DIR}/.tempest/sessions" \
         "${APP_DIR}/.tempest/scheduler"
 
@@ -73,8 +73,8 @@ DEBUG_LOG_PATH=${DEBUG_LOG_PATH:-null}
 SERVER_LOG_PATH=${SERVER_LOG_PATH:-null}
 DB_DATABASE=${DB_DATABASE:-/config/database.sqlite}
 DATA_PATH=${DATA_PATH:-/config}
-DOWNLOADS_PATH=${DOWNLOADS_PATH:-/media/downloads}
-PODCAST_PATH=${PODCAST_PATH:-/media/podcast}
+VIDEO_PATH=${VIDEO_PATH:-/media/video}
+AUDIO_PATH=${AUDIO_PATH:-/media/audio}
 YT_DLP_BINARY=${YT_DLP_BINARY:-yt-dlp}
 YT_DLP_WORKER_CONCURRENCY=${YT_DLP_WORKER_CONCURRENCY:-1}
 YT_DLP_SLEEP_INTERVAL=${YT_DLP_SLEEP_INTERVAL:-5}
@@ -88,7 +88,7 @@ EOF
     ln -sf "${ENV_TARGET}" "${APP_DIR}/.env"
 
     if [ "$(id -u)" -eq 0 ]; then
-        chown -R www-data:www-data /config /media "${APP_DIR}/.tempest" 2>/dev/null || true
+        chown -R www-data:www-data /config /media/video /media/audio "${APP_DIR}/.tempest" 2>/dev/null || true
     fi
 
     if ! grep -qE '^SIGNING_KEY=.+' "${ENV_TARGET}" 2>/dev/null; then

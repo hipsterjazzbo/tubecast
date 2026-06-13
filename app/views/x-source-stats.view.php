@@ -41,7 +41,7 @@
 
                 <div :if="$sourceProgress->active && ($stats['downloading'] > 0 || $stats['pending'] > 0)" class="space-y-2">
                     <div class="flex items-center justify-between text-xs text-slate-500">
-                        <span>Downloads</span>
+                        <span>Video &amp; audio</span>
                         <span>{{ $sourceProgress->percent }}%</span>
                     </div>
                     <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">

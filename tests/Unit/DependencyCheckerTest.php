@@ -18,8 +18,8 @@ describe('DependencyChecker', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: $script,
             workerConcurrency: 1,
             sleepInterval: 0,
@@ -45,8 +45,8 @@ describe('DependencyChecker', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: $root . '/bin/yt-dlp',
             workerConcurrency: 1,
             sleepInterval: 0,

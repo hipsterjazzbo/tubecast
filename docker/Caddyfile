@@ -14,7 +14,7 @@
 	intercept {
 		@accel header X-Accel-Redirect *
 		handle_response @accel {
-			root * /data
+			root * /media
 			rewrite * {resp.header.X-Accel-Redirect}
 			method GET
 			header -X-Accel-Redirect

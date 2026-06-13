@@ -22,8 +22,8 @@ services:
       SERVER_LOG_PATH: "null"
       DB_DATABASE: /config/database.sqlite
       DATA_PATH: /config
-      DOWNLOADS_PATH: /media/downloads
-      PODCAST_PATH: /media/podcast
+      VIDEO_PATH: /media/video
+      AUDIO_PATH: /media/audio
       YT_DLP_BINARY: yt-dlp
       YT_DLP_WORKER_CONCURRENCY: "1"
       YT_DLP_SLEEP_INTERVAL: "5"
@@ -31,10 +31,12 @@ services:
       YT_DLP_LIMIT_RATE: ""
       YOUTUBE_API_KEY: ${TUBECAST_YOUTUBE_API_KEY:-}
     volumes:
-      # Override with host paths via TUBECAST_CONFIG_DIR / TUBECAST_MEDIA_DIR in .env.docker
+      # Override with host paths via TUBECAST_*_DIR in .env.docker
       - ${TUBECAST_CONFIG_DIR:-tubecast-config}:/config
-      - ${TUBECAST_MEDIA_DIR:-tubecast-media}:/media
+      - ${TUBECAST_VIDEO_DIR:-tubecast-video}:/media/video
+      - ${TUBECAST_AUDIO_DIR:-tubecast-audio}:/media/audio
 
 volumes:
   tubecast-config:
-  tubecast-media:
+  tubecast-video:
+  tubecast-audio:

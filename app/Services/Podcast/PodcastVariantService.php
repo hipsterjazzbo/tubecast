@@ -24,7 +24,7 @@ final class PodcastVariantService
         }
 
         $bitrate = $profile?->podcastBitrateKbps ?? 96;
-        $outputDir = $this->config->podcastPath . '/' . $item->sourceId;
+        $outputDir = $this->config->audioPath . '/' . $item->sourceId;
 
         if (! is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);

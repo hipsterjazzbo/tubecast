@@ -78,11 +78,11 @@ final class DownloadRecoveryService
     {
         $videoOk = ! $source->saveVideo
             || ($item->filePath !== null && is_file($item->filePath))
-            || $this->paths->findDownloadedFile($item->ytId) !== null;
+            || $this->paths->findVideoFile($item->ytId) !== null;
 
         $audioOk = ! $source->saveAudio
             || ($item->podcastFilePath !== null && is_file($item->podcastFilePath))
-            || $this->paths->findPodcastFile(ModelId::int($source->id), $item->ytId) !== null;
+            || $this->paths->findAudioFile(ModelId::int($source->id), $item->ytId) !== null;
 
         return $videoOk && $audioOk;
     }
@@ -100,7 +100,7 @@ final class DownloadRecoveryService
             $item->filePath = null;
         } else {
             if ($item->filePath === null || ! is_file($item->filePath)) {
-                $item->filePath = $this->paths->findDownloadedFile($item->ytId);
+                $item->filePath = $this->paths->findVideoFile($item->ytId);
             }
 
             if ($source->saveAudio) {
@@ -138,7 +138,7 @@ final class DownloadRecoveryService
 
     private function applyPodcastFile(MediaItem $item, Source $source): void
     {
-        $path = $this->paths->findPodcastFile(ModelId::int($source->id), $item->ytId);
+        $path = $this->paths->findAudioFile(ModelId::int($source->id), $item->ytId);
 
         if ($path === null) {
             return;

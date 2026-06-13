@@ -67,8 +67,8 @@ final readonly class SettingsController
         return new Redirect('/settings');
     }
 
-    #[Post('/settings/dev/nuke-downloads')]
-    public function nukeDownloads(): Redirect|NotFound
+    #[Post('/settings/dev/nuke-media')]
+    public function nukeMedia(): Redirect|NotFound
     {
         if (! DevTools::enabled()) {
             return new NotFound();

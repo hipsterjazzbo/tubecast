@@ -8,8 +8,8 @@ final readonly class TubecastConfig
 {
     public function __construct(
         public string $dataPath,
-        public string $downloadsPath,
-        public string $podcastPath,
+        public string $videoPath,
+        public string $audioPath,
         public string $ytDlpBinary,
         public int $workerConcurrency,
         public float $sleepInterval,

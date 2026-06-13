@@ -38,8 +38,8 @@ final class BootstrapService
             $this->config->dataPath,
             rtrim($this->config->dataPath, '/') . '/bin',
             rtrim($this->config->dataPath, '/') . '/config',
-            $this->config->downloadsPath,
-            $this->config->podcastPath,
+            $this->config->videoPath,
+            $this->config->audioPath,
             $this->config->storedCommandsPath(),
         ]));
     }

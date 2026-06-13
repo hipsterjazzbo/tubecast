@@ -18,7 +18,9 @@ use App\Services\Podcast\PodcastVariantService;
 use App\Services\Source\EpisodeFilterService;
 use App\Services\Source\MediaItemIndexingService;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Tempest\CommandBus\CommandHandler;
+use Throwable;
 
 final readonly class DownloadMediaCommandHandler
 {
@@ -104,7 +106,7 @@ final readonly class DownloadMediaCommandHandler
                     $this->ytDlp->forAudioDownload($source, $profile)->download($url);
 
                     if (! $this->applyPodcastFile($item, $source)) {
-                        throw new \RuntimeException(
+                        throw new RuntimeException(
                             sprintf('Podcast file for %s was not found after audio download', $item->ytId),
                         );
                     }
@@ -112,7 +114,7 @@ final readonly class DownloadMediaCommandHandler
                     $item->filePath = null;
                 } else {
                     $this->ytDlp->forSource($source, $profile)->download($url);
-                    $item->filePath = $this->paths->findDownloadedFile($item->ytId);
+                    $item->filePath = $this->paths->findVideoFile($item->ytId);
 
                     if ($source->saveAudio) {
                         $this->podcast->generate($item, $profile);
@@ -128,7 +130,7 @@ final readonly class DownloadMediaCommandHandler
 
                 $item->status = MediaItemStatus::Completed;
             });
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $item->status = $this->isThrottled($exception)
                 ? MediaItemStatus::Throttled
                 : MediaItemStatus::Failed;
@@ -169,7 +171,7 @@ final readonly class DownloadMediaCommandHandler
 
     private function applyPodcastFile(MediaItem $item, Source $source): bool
     {
-        $path = $this->paths->findPodcastFile(ModelId::int($source->id), $item->ytId);
+        $path = $this->paths->findAudioFile(ModelId::int($source->id), $item->ytId);
 
         if ($path === null) {
             return false;
@@ -194,7 +196,7 @@ final readonly class DownloadMediaCommandHandler
         return $videoOk && $audioOk;
     }
 
-    private function isThrottled(\Throwable $exception): bool
+    private function isThrottled(Throwable $exception): bool
     {
         $message = strtolower($exception->getMessage());
 

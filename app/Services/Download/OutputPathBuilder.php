@@ -18,14 +18,14 @@ final class OutputPathBuilder
         return '%(uploader)s/%(title)s [%(id)s].%(ext)s';
     }
 
-    public function podcastOutputTemplate(int $sourceId): string
+    public function audioOutputTemplate(int $sourceId): string
     {
-        return rtrim($this->config->podcastPath, '/') . '/' . $sourceId . '/%(id)s.%(ext)s';
+        return rtrim($this->config->audioPath, '/') . '/' . $sourceId . '/%(id)s.%(ext)s';
     }
 
-    public function findPodcastFile(int $sourceId, string $videoId): ?string
+    public function findAudioFile(int $sourceId, string $videoId): ?string
     {
-        $directory = rtrim($this->config->podcastPath, '/') . '/' . $sourceId;
+        $directory = rtrim($this->config->audioPath, '/') . '/' . $sourceId;
 
         if (! is_dir($directory)) {
             return null;
@@ -127,16 +127,16 @@ final class OutputPathBuilder
         }
     }
 
-    public function findDownloadedFile(string $videoId): ?string
+    public function findVideoFile(string $videoId): ?string
     {
-        $pattern = $this->config->downloadsPath . '/**/*' . $videoId . '*';
+        $pattern = $this->config->videoPath . '/**/*' . $videoId . '*';
 
         $matches = glob($pattern, GLOB_BRACE) ?: [];
 
         if ($matches === []) {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator(
-                    $this->config->downloadsPath,
+                    $this->config->videoPath,
                     \FilesystemIterator::SKIP_DOTS,
                 ),
             );
@@ -247,10 +247,10 @@ final class OutputPathBuilder
     /** @return list<string> */
     private function episodeStorageDirectories(int $sourceId): array
     {
-        $directories = [rtrim($this->config->downloadsPath, '/')];
+        $directories = [rtrim($this->config->videoPath, '/')];
 
         if ($sourceId > 0) {
-            $directories[] = rtrim($this->config->podcastPath, '/') . '/' . $sourceId;
+            $directories[] = rtrim($this->config->audioPath, '/') . '/' . $sourceId;
         }
 
         return $directories;

@@ -50,14 +50,15 @@
                 Nuked {{ $nukeResult['files'] }} files and reset {{ $nukeResult['items'] }} media items. Pending download commands were cleared.
             </p>
 
-            <form method="post" action="/settings/dev/nuke-downloads"
-                  onsubmit="return confirm('Delete ALL downloaded video and podcast files? This cannot be undone.');">
+            <form method="post" action="/settings/dev/nuke-media"
+                  onsubmit="return confirm('Delete ALL video and audio files? This cannot be undone.');">
                 <p class="text-sm text-slate-400 mb-4">
-                    Wipes everything under downloads and podcast storage, resets episode statuses to discovered, and clears queued download commands.
-                    Active yt-dlp processes may need a container restart if downloads are mid-flight.
+                    Wipes everything under video and audio storage, resets episode statuses to discovered, and clears
+                    queued download commands.
+                    Active yt-dlp processes may need a container restart if transfers are mid-flight.
                 </p>
                 <button type="submit" class="text-sm px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition">
-                    Nuke all downloads
+                    Nuke video and audio
                 </button>
             </form>
         </section>

@@ -36,19 +36,21 @@ Open **http://localhost:8742** and sign in with the default credentials:
 
 Change the password before exposing TubeCast to a network — copy `.env.docker.example` to `.env.docker`, set `TUBECAST_ADMIN_PASSWORD`, and run `docker compose --env-file .env.docker up -d`.
 
-On first start the container creates two data volumes, runs database migrations, and seeds default download profiles:
+On first start the container creates three data volumes, runs database migrations, and seeds default download profiles:
 
 | Volume            | Container path | Contents                                     |
 |-------------------|----------------|----------------------------------------------|
 | `tubecast-config` | `/config`      | SQLite database, app `.env`, stored commands |
-| `tubecast-media`  | `/media`       | Downloaded videos and podcast audio          |
+| `tubecast-video`  | `/media/video` | Downloaded video files                       |
+| `tubecast-audio`  | `/media/audio` | Downloaded audio files                       |
 
-To store config and media on separate host directories (e.g. different NAS pools), set `TUBECAST_CONFIG_DIR` and
-`TUBECAST_MEDIA_DIR` in `.env.docker` — see `.env.docker.example`.
+To store config, video, and audio on separate host directories (e.g. different NAS pools), set `TUBECAST_CONFIG_DIR`,
+`TUBECAST_VIDEO_DIR`, and `TUBECAST_AUDIO_DIR` in `.env.docker` — see `.env.docker.example`.
 
-**Upgrading from a single `tubecast-data` volume:** stop the container, then copy into your config mount (`/config`):
-`database.sqlite`, `stored-commands/`, and rename `config/.env` → `.env`. Copy `downloads/` and `podcast/` into your
-media mount (`/media`). Start with the updated compose file and remove the old `tubecast-data` volume once verified.
+**Upgrading from a single `tubecast-data` or `tubecast-media` volume:** stop the container, then copy into your config
+mount (`/config`): `database.sqlite`, `stored-commands/`, and rename `config/.env` → `.env`. Copy `video/` into
+`/media/video` and `audio/` into `/media/audio` (or the corresponding host bind paths). Start with the updated compose
+file and remove the old volume once verified.
 
 ### Configuration
 
@@ -63,7 +65,8 @@ media mount (`/media`). Start with the updated compose file and remove the old `
 | `TUBECAST_PUID` / `TUBECAST_PGID` | `33`                               | Container user/group — match your NAS volume owner (e.g. `568:568` on TrueNAS) |
 | `TUBECAST_YOUTUBE_API_KEY`        | _(empty)_                          | Optional YouTube Data API key                                                  |
 | `TUBECAST_CONFIG_DIR`             | _(named volume `tubecast-config`)_ | Host path for config (database, `.env`, stored commands)                       |
-| `TUBECAST_MEDIA_DIR`              | _(named volume `tubecast-media`)_  | Host path for downloads and podcast files                                      |
+| `TUBECAST_VIDEO_DIR`              | _(named volume `tubecast-video`)_  | Host path for video files                                                      |
+| `TUBECAST_AUDIO_DIR`              | _(named volume `tubecast-audio`)_  | Host path for audio files                                                      |
 
 Cookies and proxy can also be set in the **Settings** UI (stored in the database).
 
@@ -72,7 +75,8 @@ Cookies and proxy can also be set in the **Settings** UI (stored in the database
 1. Open **Sources → Add source**
 2. Paste a YouTube URL (channel, `@handle`, `/c/name`, playlist, or video)
 3. Choose what to save:
-   - **Video** — MP4 files in your downloads folder (good for archiving shows like [Critical Role](https://www.youtube.com/@CriticalRole))
+   - **Video** — MP4 files in your video folder (good for archiving shows
+     like [Critical Role](https://www.youtube.com/@CriticalRole))
    - **Audio** — M4A podcast files plus an RSS feed (good for music or talk channels like [Oculus Imperia](https://www.youtube.com/oculusimperia))
    - **Index only** — index episodes without downloading
 4. TubeCast queues a full index automatically. Use **Activity** on the source page to watch progress.
@@ -200,8 +204,8 @@ The app reads these variables at runtime (set via `.env` for lerd, or baked into
 | `ADMIN_PASSWORD`            | `changeme`                 | Admin password                                           |
 | `DB_DATABASE`               | `database/database.sqlite` | SQLite database path                                     |
 | `DATA_PATH`                 | `data`                     | Root data directory                                      |
-| `DOWNLOADS_PATH`            | `data/downloads`           | Downloaded video files                                   |
-| `PODCAST_PATH`              | `data/podcast`             | Podcast audio files                                      |
+| `VIDEO_PATH`                | `data/video`               | Downloaded video files                                   |
+| `AUDIO_PATH`                | `data/audio`               | Downloaded audio files                                   |
 | `YT_DLP_BINARY`             | `yt-dlp`                   | Path to yt-dlp binary                                    |
 | `YT_DLP_WORKER_CONCURRENCY` | `1`                        | Parallel download workers                                |
 | `YT_DLP_SLEEP_INTERVAL`     | `5`                        | Seconds between yt-dlp requests                          |
@@ -216,7 +220,7 @@ TubeCast runs background workers (command monitor + scheduler) inside the contai
 - **Auto mode** — downloads start automatically after indexing
 - **Manual mode** — click **Download** on individual episodes or **Download all matching**
 
-Video files land in `DOWNLOADS_PATH` (default `/media/downloads`). Podcast audio lands in `PODCAST_PATH/{source-id}/`.
+Video files land in `VIDEO_PATH` (default `/media/video`). Audio files land in `AUDIO_PATH/{source-id}/`.
 Interrupted downloads are recovered on restart.
 
 ## Project structure
@@ -245,7 +249,7 @@ tubecast/
 │   └── Support/            # Test helpers
 ├── public/                 # Web root (entry point)
 ├── database/               # SQLite database (local dev)
-├── data/                   # Downloads & podcast files (local dev)
+├── data/                   # Video & audio files (local dev)
 ├── docker/                 # Container config (Caddyfile, s6, entrypoint)
 ├── Dockerfile              # Multi-stage production image
 ├── docker-compose.yml      # Production Compose

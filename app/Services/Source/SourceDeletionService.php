@@ -73,7 +73,7 @@ final class SourceDeletionService
 
         foreach (
             [
-                $this->paths->findDownloadedFile($item->ytId),
+                $this->paths->findVideoFile($item->ytId),
                 $this->paths->findPartialFileForVideo($item->ytId),
                 $this->paths->findInfoJsonForEpisode($sourceId, $item->ytId),
             ] as $path
@@ -89,7 +89,7 @@ final class SourceDeletionService
 
     private function deleteSourcePodcastDirectory(int $sourceId): int
     {
-        $directory = rtrim($this->config->podcastPath, '/') . '/' . $sourceId;
+        $directory = rtrim($this->config->audioPath, '/') . '/' . $sourceId;
 
         if (! is_dir($directory)) {
             return 0;

@@ -24,7 +24,7 @@ final class DownloadCleanupService
     {
         $deletedFiles = 0;
 
-        foreach ([$this->config->downloadsPath, $this->config->podcastPath] as $directory) {
+        foreach ([$this->config->videoPath, $this->config->audioPath] as $directory) {
             $deletedFiles += $this->wipeDirectory($directory);
         }
 

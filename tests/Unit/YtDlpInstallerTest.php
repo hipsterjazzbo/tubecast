@@ -27,8 +27,8 @@ describe('YtDlpInstaller', function (): void {
 
         $config = new TubecastConfig(
             dataPath: $root,
-            downloadsPath: $root . '/downloads',
-            podcastPath: $root . '/podcast',
+            videoPath: $root . '/video',
+            audioPath: $root . '/audio',
             ytDlpBinary: 'yt-dlp',
             workerConcurrency: 1,
             sleepInterval: 0,

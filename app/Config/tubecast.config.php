@@ -23,8 +23,8 @@ if (str_contains($ytDlpBinary, '/') && ! str_starts_with($ytDlpBinary, '/') && !
 
 return new TubecastConfig(
     dataPath: $resolvePath(env('DATA_PATH', 'data')),
-    downloadsPath: $resolvePath(env('DOWNLOADS_PATH', 'data/downloads')),
-    podcastPath: $resolvePath(env('PODCAST_PATH', 'data/podcast')),
+    videoPath: $resolvePath(env('VIDEO_PATH', 'data/video')),
+    audioPath: $resolvePath(env('AUDIO_PATH', 'data/audio')),
     ytDlpBinary: $ytDlpBinary,
     workerConcurrency: (int) env('YT_DLP_WORKER_CONCURRENCY', '1'),
     sleepInterval: (float) env('YT_DLP_SLEEP_INTERVAL', '5'),
